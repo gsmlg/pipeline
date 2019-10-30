@@ -587,23 +587,23 @@ spec:
         - -stderrthreshold
         - INFO
         - -kubeconfig-writer-image
-        - docker.io/gsmlg/pipline-kubeconfigwriter@sha256:912d30334e63899f3875806b0633b5ddf3470d64fbd2333fc2c534afcfa9872d
+        - docker.io/gsmlg/pipeline-kubeconfigwriter@sha256:912d30334e63899f3875806b0633b5ddf3470d64fbd2333fc2c534afcfa9872d
         - -creds-image
-        - docker.io/gsmlg/pipline-creds-init@sha256:8f8c43a115984e90db3b0cb3fcd46e1699ec15515ca7d258571a44c7d76040ca
+        - docker.io/gsmlg/pipeline-creds-init@sha256:8f8c43a115984e90db3b0cb3fcd46e1699ec15515ca7d258571a44c7d76040ca
         - -git-image
-        - docker.io/gsmlg/pipline-git-init@sha256:00466e8ec7d8a289140893523d33261ba5006dfb1bd9b96aee2736fc739dba5a
+        - docker.io/gsmlg/pipeline-git-init@sha256:00466e8ec7d8a289140893523d33261ba5006dfb1bd9b96aee2736fc739dba5a
         - -nop-image
-        - docker.io/gsmlg/pipline-nop@sha256:b77955ba2711e1ba30ab48670bcafd725ddc01a105d173256e158053914dc42c
+        - docker.io/gsmlg/pipeline-nop@sha256:b77955ba2711e1ba30ab48670bcafd725ddc01a105d173256e158053914dc42c
         - -bash-noop-image
-        - docker.io/gsmlg/pipline-bash@sha256:a96b5840cdeb2a6598a8566a8607b925732286a8fdf15147be3591b7c7fb41f7
+        - docker.io/gsmlg/pipeline-bash@sha256:a96b5840cdeb2a6598a8566a8607b925732286a8fdf15147be3591b7c7fb41f7
         - -gsutil-image
-        - docker.io/gsmlg/pipline-gsutil@sha256:0130ec562b897c5929123d4e14cd3271cd58102f1f411f52cb6f415088bf5944
+        - docker.io/gsmlg/pipeline-gsutil@sha256:0130ec562b897c5929123d4e14cd3271cd58102f1f411f52cb6f415088bf5944
         - -entrypoint-image
-        - docker.io/gsmlg/pipline-entrypoint@sha256:5c2a7261d923b8af29ad3be34a9c9a3abd1ed11a030ca1cc207293d203755ab4
+        - docker.io/gsmlg/pipeline-entrypoint@sha256:5c2a7261d923b8af29ad3be34a9c9a3abd1ed11a030ca1cc207293d203755ab4
         - -imagedigest-exporter-image
-        - docker.io/gsmlg/pipline-imagedigestexporter@sha256:23e2de68c86de494aba98dabf02b175efc051827c52350bdd9a89f6a3d969ea9
+        - docker.io/gsmlg/pipeline-imagedigestexporter@sha256:23e2de68c86de494aba98dabf02b175efc051827c52350bdd9a89f6a3d969ea9
         - -pr-image
-        - docker.io/gsmlg/pipline-pullrequest-init@sha256:26a181a89c00ab840599508e905d1cfeed5db2b4ea41fbcc63c22979389e4a46
+        - docker.io/gsmlg/pipeline-pullrequest-init@sha256:26a181a89c00ab840599508e905d1cfeed5db2b4ea41fbcc63c22979389e4a46
         - -build-gcs-fetcher-image
         - gcr.io/tekton-releases/github.com/tektoncd/pipeline/vendor/github.com/googlecloudplatform/cloud-builders/gcs-fetcher/cmd/gcs-fetcher@sha256:5be2e14ed6b986198beca21a93af34e807586dcf9155babeca7f5971a2fa0311
         env:
@@ -617,7 +617,7 @@ spec:
           value: config-observability
         - name: METRICS_DOMAIN
           value: tekton.dev/pipeline
-        image: docker.io/gsmlg/pipline-controller@sha256:72a2bda21b5bc23550e94fdf7cee8a6e5bd82601f5d81a6237fc2b8c42321a59
+        image: docker.io/gsmlg/pipeline-controller@sha256:72a2bda21b5bc23550e94fdf7cee8a6e5bd82601f5d81a6237fc2b8c42321a59
         name: tekton-pipelines-controller
         volumeMounts:
         - mountPath: /etc/config-logging
@@ -657,7 +657,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: docker.io/gsmlg/pipline-webhook@sha256:1d6336f2748cb8e5c19b17191a54c6adbbc77e2d1c60818f93282ec482bb2957
+        image: docker.io/gsmlg/pipeline-webhook@sha256:1d6336f2748cb8e5c19b17191a54c6adbbc77e2d1c60818f93282ec482bb2957
         name: webhook
         volumeMounts:
         - mountPath: /etc/config-logging
