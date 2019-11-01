@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  generateName: build-docker-image-from-git-source-task-run-
+spec:
+  serviceAccountName: tutorial-service
+  taskRef:
+    name: build-docker-image-from-git-source
+  inputs:
+    resources:
+      - name: docker-source
+        resourceSpec:
+          type: git
+          params:
+            - name: revision
+              value: master
+            - name: url
+              value: https://github.com/zdnscloud/singlecloud-ui
+    params:
+      - name: pathToDockerFile
+        value: Dockerfile
+      - name: pathToContext
+        value: /workspace/docker-source #configure: may change according to your source
+      - name: imageTagName
+        value: master
+  outputs:
+    resources:
+      - name: builtImage
+        resourceRef:
+          name: singlecloud-ui-web
