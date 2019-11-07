@@ -360,7 +360,7 @@ spec:
         - -stderrthreshold
         - INFO
         - -el-image
-        - docker.io/gsmlg/pipeline-trigger-eventlistenersink@sha256:34dc184a59d0c8e357b6208388cbbc9095a92508f522d18a3a371c22e0d4c930
+        - docker.io/gsmlg/pipeline-trigger-eventlistenersink:v0.0.1
         env:
         - name: SYSTEM_NAMESPACE
           valueFrom:
@@ -372,7 +372,7 @@ spec:
           value: config-observability-triggers
         - name: METRICS_DOMAIN
           value: tekton.dev/triggers
-        image: docker.io/gsmlg/pipeline-trigger-controller@sha256:c04694411632b05b0bc2116c641432b8d596c5814394adbc659f16505fed9db4
+        image: docker.io/gsmlg/pipeline-trigger-controller:v0.0.1
         name: tekton-triggers-controller
         volumeMounts:
         - mountPath: /etc/config-logging
@@ -422,7 +422,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: docker.io/gsmlg/pipeline-trigger-webhook@sha256:c0f6cd59922c472bb3ad386513b681b8bf5aaf48e6811bd6de24bdf09062af8a
+        image: docker.io/gsmlg/pipeline-trigger-webhook:v0.0.1
         name: webhook
         volumeMounts:
         - mountPath: /etc/config-logging
