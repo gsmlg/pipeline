@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  generateName: build-ui-run-
+  namespace: cicd
+spec:
+  serviceAccountName: pipeline-run-service
+  taskRef:
+    name: kaniko
+  inputs:
+    resources:
+      - name: source
+        resourceSpec:
+          type: git
+          params:
+            - name: revision
+              value: master
+            - name: url
+              value: https://github.com/zdnscloud/singlecloud-ui
+  outputs:
+    resources:
+      - name: image
+        resourceSpec:
+          type: image
+          params:
+            - name: url
+              value: docker.io/zdnscloud/singlecloud-ui:master
