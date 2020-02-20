@@ -1,0 +1,10 @@
+docker.io/gsmlg/tekton-pipeline-controller:v0.10.1
+docker.io/gsmlg/tekton-pipeline-kubeconfigwriter:v0.10.1
+docker.io/gsmlg/tekton-pipeline-creds-init:v0.10.1
+docker.io/gsmlg/tekton-pipeline-git-init:v0.10.1
+docker.io/gsmlg/tekton-pipeline-entrypoint:v0.10.1
+docker.io/gsmlg/tekton-pipeline-imagedigestexporter:v0.10.1
+docker.io/gsmlg/tekton-pipeline-pullrequest-init:v0.10.1
+docker.io/gsmlg/tekton-pipeline-gcs-fetcher:v0.10.1
+docker.io/gsmlg/tekton-pipeline-webhook:v0.10.1
+

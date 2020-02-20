@@ -1,157 +1,113 @@
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: v1
 kind: Namespace
 metadata:
   name: tekton-pipelines
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: tekton-pipelines
 spec:
-  allowPrivilegeEscalation: false
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
   privileged: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
+  allowPrivilegeEscalation: false
   volumes:
-  - emptyDir
-  - configMap
-  - secret
+  - 'emptyDir'
+  - 'configMap'
+  - 'secret'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+    - min: 1
+      max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+    - min: 1
+      max: 65535
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: tekton-pipelines-admin
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - pods/log
-  - namespaces
-  - secrets
-  - events
-  - serviceaccounts
-  - configmaps
-  - persistentvolumeclaims
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - delete
-  - patch
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - delete
-  - patch
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - deployments/finalizers
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - delete
-  - patch
-  - watch
-- apiGroups:
-  - admissionregistration.k8s.io
-  resources:
-  - mutatingwebhookconfigurations
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - delete
-  - patch
-  - watch
-- apiGroups:
-  - tekton.dev
-  resources:
-  - tasks
-  - clustertasks
-  - taskruns
-  - pipelines
-  - pipelineruns
-  - pipelineresources
-  - conditions
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - delete
-  - patch
-  - watch
-- apiGroups:
-  - tekton.dev
-  resources:
-  - taskruns/finalizers
-  - pipelineruns/finalizers
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - delete
-  - patch
-  - watch
-- apiGroups:
-  - tekton.dev
-  resources:
-  - tasks/status
-  - clustertasks/status
-  - taskruns/status
-  - pipelines/status
-  - pipelineruns/status
-  - pipelineresources/status
-  verbs:
-  - get
-  - list
-  - create
-  - update
-  - delete
-  - patch
-  - watch
-- apiGroups:
-  - policy
-  resourceNames:
-  - tekton-pipelines
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "namespaces", "secrets", "events", "serviceaccounts",
+    "configmaps", "persistentvolumeclaims"]
+  verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments/finalizers"]
+  verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["mutatingwebhookconfigurations"]
+  verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+- apiGroups: ["tekton.dev"]
+  resources: ["tasks", "clustertasks", "taskruns", "pipelines", "pipelineruns", "pipelineresources",
+    "conditions"]
+  verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+- apiGroups: ["tekton.dev"]
+  resources: ["taskruns/finalizers", "pipelineruns/finalizers"]
+  verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+- apiGroups: ["tekton.dev"]
+  resources: ["tasks/status", "clustertasks/status", "taskruns/status", "pipelines/status",
+    "pipelineruns/status", "pipelineresources/status"]
+  verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  resourceNames: ["tekton-pipelines"]
+  verbs: ["use"]
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -159,20 +115,46 @@ metadata:
   namespace: tekton-pipelines
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
   name: tekton-pipelines-controller-admin
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: tekton-pipelines-admin
 subjects:
 - kind: ServiceAccount
   name: tekton-pipelines-controller
   namespace: tekton-pipelines
+roleRef:
+  kind: ClusterRole
+  name: tekton-pipelines-admin
+  apiGroup: rbac.authorization.k8s.io
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -180,17 +162,32 @@ metadata:
 spec:
   group: tekton.dev
   names:
-    categories:
-    - all
-    - tekton-pipelines
     kind: ClusterTask
     plural: clustertasks
+    categories:
+    - tekton
+    - tekton-pipelines
   scope: Cluster
+  # Opt into the status subresource so metadata.generation
+  # starts to increment
   subresources:
     status: {}
   version: v1alpha1
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -198,40 +195,68 @@ metadata:
 spec:
   group: tekton.dev
   names:
-    categories:
-    - all
-    - tekton-pipelines
     kind: Condition
     plural: conditions
+    categories:
+    - tekton
+    - tekton-pipelines
   scope: Namespaced
+  # Opt into the status subresource so metadata.generation
+  # starts to increment
   subresources:
     status: {}
   version: v1alpha1
 
 ---
+# Copyright 2018 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
+  name: images.caching.internal.knative.dev
   labels:
     knative.dev/crd-install: "true"
-  name: images.caching.internal.knative.dev
 spec:
   group: caching.internal.knative.dev
+  version: v1alpha1
   names:
+    kind: Image
+    plural: images
+    singular: image
     categories:
     - knative-internal
     - caching
-    kind: Image
-    plural: images
     shortNames:
     - img
-    singular: image
   scope: Namespaced
   subresources:
     status: {}
-  version: v1alpha1
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -239,51 +264,81 @@ metadata:
 spec:
   group: tekton.dev
   names:
-    categories:
-    - all
-    - tekton-pipelines
     kind: Pipeline
     plural: pipelines
+    categories:
+    - tekton
+    - tekton-pipelines
   scope: Namespaced
+  # Opt into the status subresource so metadata.generation
+  # starts to increment
   subresources:
     status: {}
   version: v1alpha1
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: pipelineruns.tekton.dev
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.conditions[?(@.type=="Succeeded")].status
-    name: Succeeded
-    type: string
-  - JSONPath: .status.conditions[?(@.type=="Succeeded")].reason
-    name: Reason
-    type: string
-  - JSONPath: .status.startTime
-    name: StartTime
-    type: date
-  - JSONPath: .status.completionTime
-    name: CompletionTime
-    type: date
   group: tekton.dev
   names:
-    categories:
-    - all
-    - tekton-pipelines
     kind: PipelineRun
     plural: pipelineruns
+    categories:
+    - tekton
+    - tekton-pipelines
     shortNames:
     - pr
     - prs
   scope: Namespaced
+  additionalPrinterColumns:
+  - name: Succeeded
+    type: string
+    JSONPath: ".status.conditions[?(@.type==\"Succeeded\")].status"
+  - name: Reason
+    type: string
+    JSONPath: ".status.conditions[?(@.type==\"Succeeded\")].reason"
+  - name: StartTime
+    type: date
+    JSONPath: .status.startTime
+  - name: CompletionTime
+    type: date
+    JSONPath: .status.completionTime
+  # Opt into the status subresource so metadata.generation
+  # starts to increment
   subresources:
     status: {}
   version: v1alpha1
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -291,17 +346,32 @@ metadata:
 spec:
   group: tekton.dev
   names:
-    categories:
-    - all
-    - tekton-pipelines
     kind: PipelineResource
     plural: pipelineresources
+    categories:
+    - tekton
+    - tekton-pipelines
   scope: Namespaced
+  # Opt into the status subresource so metadata.generation
+  # starts to increment
   subresources:
     status: {}
   version: v1alpha1
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -309,51 +379,82 @@ metadata:
 spec:
   group: tekton.dev
   names:
-    categories:
-    - all
-    - tekton-pipelines
     kind: Task
     plural: tasks
+    categories:
+    - tekton
+    - tekton-pipelines
   scope: Namespaced
+  # Opt into the status subresource so metadata.generation
+  # starts to increment
   subresources:
     status: {}
   version: v1alpha1
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: taskruns.tekton.dev
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.conditions[?(@.type=="Succeeded")].status
-    name: Succeeded
-    type: string
-  - JSONPath: .status.conditions[?(@.type=="Succeeded")].reason
-    name: Reason
-    type: string
-  - JSONPath: .status.startTime
-    name: StartTime
-    type: date
-  - JSONPath: .status.completionTime
-    name: CompletionTime
-    type: date
   group: tekton.dev
   names:
-    categories:
-    - all
-    - tekton-pipelines
     kind: TaskRun
     plural: taskruns
+    categories:
+    - tekton
+    - tekton-pipelines
     shortNames:
     - tr
     - trs
   scope: Namespaced
+  additionalPrinterColumns:
+  - name: Succeeded
+    type: string
+    JSONPath: ".status.conditions[?(@.type==\"Succeeded\")].status"
+  - name: Reason
+    type: string
+    JSONPath: ".status.conditions[?(@.type==\"Succeeded\")].reason"
+  - name: StartTime
+    type: date
+    JSONPath: .status.startTime
+  - name: CompletionTime
+    type: date
+    JSONPath: .status.completionTime
+  # Opt into the status subresource so metadata.generation
+  # starts to increment
   subresources:
     status: {}
   version: v1alpha1
 
 ---
+# Copyright 2019 Tekton Authors LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -363,7 +464,7 @@ metadata:
   namespace: tekton-pipelines
 spec:
   ports:
-  - name: metrics
+  - name: http-metrics
     port: 9090
     protocol: TCP
     targetPort: 9090
@@ -371,6 +472,20 @@ spec:
     app: tekton-pipelines-controller
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -380,7 +495,8 @@ metadata:
   namespace: tekton-pipelines
 spec:
   ports:
-  - port: 443
+  - name: https-webhook
+    port: 443
     targetPort: 8443
   selector:
     app: tekton-pipelines-webhook
@@ -389,10 +505,10 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  labels:
-    rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    rbac.authorization.k8s.io/aggregate-to-edit: "true"
   name: tekton-aggregate-edit
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
 rules:
 - apiGroups:
   - tekton.dev
@@ -417,9 +533,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name: tekton-aggregate-view
   labels:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
-  name: tekton-aggregate-view
 rules:
 - apiGroups:
   - tekton.dev
@@ -436,25 +552,83 @@ rules:
   - watch
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: v1
-data: null
 kind: ConfigMap
 metadata:
   name: config-artifact-bucket
   namespace: tekton-pipelines
+#  data:
+#    # location of the gcs bucket to be used for artifact storage
+#    location: "gs://bucket-name"
+#    # name of the secret that will contain the credentials for the service account
+#    # with access to the bucket
+#    bucket.service.account.secret.name:
+#    # The key in the secret with the required service account json
+#    bucket.service.account.secret.key:
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: v1
-data: null
 kind: ConfigMap
 metadata:
   name: config-artifact-pvc
   namespace: tekton-pipelines
+# data:
+#   # size of the PVC volume
+#   size: 5Gi
+#
+#   # storage class of the PVC volume
+#   storageClassName: storage-class-name
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-defaults
+  namespace: tekton-pipelines
 data:
-  _example: |
+  _example: |-
     ################################
     #                              #
     #    EXAMPLE CONFIGURATION     #
@@ -477,16 +651,40 @@ data:
     # default-service-account contains the default service account name
     # to use for TaskRun and PipelineRun, if none is specified.
     default-service-account: "default"
-kind: ConfigMap
-metadata:
-  name: config-defaults
-  namespace: tekton-pipelines
+
+    # default-managed-by-label-value contains the default value given to the
+    # "app.kubernetes.io/managed-by" label applied to all Pods created for
+    # TaskRuns. If a user's requested TaskRun specifies another value for this
+    # label, the user's request supercedes.
+    default-managed-by-label-value: "tekton-pipelines"
+
+    # default-pod-template contains the default pod template to use
+    # TaskRun and PipelineRun, if none is specified. If a pod template
+    # is specified, the default pod template is ignored.
+    # default-pod-template:
 
 ---
+# Copyright 2019 Tekton Authors LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-logging
+  namespace: tekton-pipelines
 data:
-  loglevel.controller: info
-  loglevel.webhook: info
+  # Common configuration for all knative codebase
   zap-logger-config: |
     {
       "level": "info",
@@ -512,13 +710,30 @@ data:
         "callerEncoder": ""
       }
     }
-kind: ConfigMap
-metadata:
-  name: config-logging
-  namespace: tekton-pipelines
+  # Log level overrides
+  loglevel.controller: "info"
+  loglevel.webhook: "info"
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-observability
+  namespace: tekton-pipelines
 data:
   _example: |
     ################################
@@ -553,20 +768,30 @@ data:
     # charge.  If metrics.backend-destination is not Stackdriver, this is
     # ignored.
     metrics.allow-stackdriver-custom-metrics: "false"
-kind: ConfigMap
-metadata:
-  name: config-observability
-  namespace: tekton-pipelines
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app.kubernetes.io/component: controller
-    app.kubernetes.io/name: tekton-pipelines
   name: tekton-pipelines-controller
   namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/name: tekton-pipelines
+    app.kubernetes.io/component: controller
+    tekton.dev/release: "v0.10.1"
 spec:
   replicas: 1
   selector:
@@ -576,36 +801,28 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+        # tekton.dev/release value replaced with inputs.params.versionTag in pipeline/tekton/publish.yaml
+        tekton.dev/release: "v0.10.1"
       labels:
         app: tekton-pipelines-controller
-        app.kubernetes.io/component: controller
         app.kubernetes.io/name: tekton-pipelines
+        app.kubernetes.io/component: controller
     spec:
+      serviceAccountName: tekton-pipelines-controller
       containers:
-      - args:
-        - -logtostderr
-        - -stderrthreshold
-        - INFO
-        - -kubeconfig-writer-image
-        - docker.io/gsmlg/pipeline-kubeconfigwriter:v0.0.1
-        - -creds-image
-        - docker.io/gsmlg/pipeline-creds-init:v0.0.1
-        - -git-image
-        - docker.io/gsmlg/pipeline-git-init:v0.0.1
-        - -nop-image
-        - docker.io/gsmlg/pipeline-nop:v0.0.1
-        - -bash-noop-image
-        - docker.io/gsmlg/pipeline-bash:v0.0.1
-        - -gsutil-image
-        - docker.io/gsmlg/pipeline-gsutil:v0.0.1
-        - -entrypoint-image
-        - docker.io/gsmlg/pipeline-entrypoint:v0.0.1
-        - -imagedigest-exporter-image
-        - docker.io/gsmlg/pipeline-imagedigestexporter:v0.0.1
-        - -pr-image
-        - docker.io/gsmlg/pipeline-pullrequest-init:v0.0.1
-        - -build-gcs-fetcher-image
-        - gcr.io/tekton-releases/github.com/tektoncd/pipeline/vendor/github.com/googlecloudplatform/cloud-builders/gcs-fetcher/cmd/gcs-fetcher@sha256:5be2e14ed6b986198beca21a93af34e807586dcf9155babeca7f5971a2fa0311
+      - name: tekton-pipelines-controller
+        image: docker.io/gsmlg/tekton-pipeline-controller:v0.10.1
+        args: ["-kubeconfig-writer-image", "docker.io/gsmlg/tekton-pipeline-kubeconfigwriter:v0.10.1",
+          "-creds-image", "docker.io/gsmlg/tekton-pipeline-creds-init:v0.10.1",
+          "-git-image", "docker.io/gsmlg/tekton-pipeline-git-init:v0.10.1",
+          "-nop-image", "tianon/true", "-shell-image", "busybox", "-gsutil-image",
+          "google/cloud-sdk", "-entrypoint-image", "docker.io/gsmlg/tekton-pipeline-entrypoint:v0.10.1",
+          "-imagedigest-exporter-image", "docker.io/gsmlg/tekton-pipeline-imagedigestexporter:v0.10.1",
+          "-pr-image", "docker.io/gsmlg/tekton-pipeline-pullrequest-init:v0.10.1",
+          "-build-gcs-fetcher-image", "docker.io/gsmlg/tekton-pipeline-gcs-fetcher:v0.10.1"]
+        volumeMounts:
+        - name: config-logging
+          mountPath: /etc/config-logging
         env:
         - name: SYSTEM_NAMESPACE
           valueFrom:
@@ -615,28 +832,44 @@ spec:
           value: config-logging
         - name: CONFIG_OBSERVABILITY_NAME
           value: config-observability
+        - name: CONFIG_ARTIFACT_BUCKET_NAME
+          value: config-artifact-bucket
+        - name: CONFIG_ARTIFACT_PVC_NAME
+          value: config-artifact-pvc
         - name: METRICS_DOMAIN
           value: tekton.dev/pipeline
-        image: docker.io/gsmlg/pipeline-controller:v0.0.1
-        name: tekton-pipelines-controller
-        volumeMounts:
-        - mountPath: /etc/config-logging
-          name: config-logging
-      serviceAccountName: tekton-pipelines-controller
       volumes:
-      - configMap:
+      - name: config-logging
+        configMap:
           name: config-logging
-        name: config-logging
 
 ---
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app.kubernetes.io/component: webhook-controller
-    app.kubernetes.io/name: tekton-pipelines
+  # Note: the Deployment name must be the same as the Service name specified in
+  # config/400-webhook-service.yaml. If you change this name, you must also
+  # change the value of WEBHOOK_SERVICE_NAME below.
   name: tekton-pipelines-webhook
   namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/name: tekton-pipelines
+    app.kubernetes.io/component: webhook-controller
+    tekton.dev/release: "v0.10.1"
 spec:
   replicas: 1
   selector:
@@ -646,26 +879,31 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+        tekton.dev/release: "v0.10.1"
       labels:
         app: tekton-pipelines-webhook
-        app.kubernetes.io/component: webhook-controller
         app.kubernetes.io/name: tekton-pipelines
+        app.kubernetes.io/component: webhook-controller
     spec:
+      serviceAccountName: tekton-pipelines-controller
       containers:
-      - env:
+      - name: webhook
+        # This is the Go import path for the binary that is containerized
+        # and substituted here.
+        image: docker.io/gsmlg/tekton-pipeline-webhook:v0.10.1
+        volumeMounts:
+        - name: config-logging
+          mountPath: /etc/config-logging
+        env:
         - name: SYSTEM_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: docker.io/gsmlg/pipeline-webhook:v0.0.1
-        name: webhook
-        volumeMounts:
-        - mountPath: /etc/config-logging
-          name: config-logging
-      serviceAccountName: tekton-pipelines-controller
+        - name: WEBHOOK_SERVICE_NAME
+          value: tekton-pipelines-webhook
       volumes:
-      - configMap:
+      - name: config-logging
+        configMap:
           name: config-logging
-        name: config-logging
 
 ---

@@ -1,19 +1,25 @@
 #!/bin/bash
 
+export DOCKER=${DOCKER:-docker}
+
 FILE=$(curl -sSL https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml)
 
-IMAGES=$( echo "${FILE}" | grep gcr.io |awk '{print $2}')
+IMAGES=$(echo "${FILE}" | grep gcr.io |awk '{print $2}')
 
 VAR="v0.0.1"
 
+echo $IMAGES
+exit
+
 for img in $IMAGES
 do
-    echo $img
+    echo "Image ====>> $img"
     toimgs=$(echo $img | sed 's;gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/;docker.io/gsmlg/pipeline-;g')
-    toimg="$(echo $toimgs | awk -F'@' '{print $1}'):$VAR"
-    docker pull $img
-    docker tag "$img" "$toimg"
-    docker push "$toimg"
+    toimg="$(echo $toimgs | awk -F'@' '{print $1}')"
+    echo "New Image ====> $toimg"
+    $DOCKER pull $img
+    $DOCKER tag "$img" "$toimg"
+    $DOCKER push "$toimg"
 done
 
 #echo "${FILE}" | sed 's;gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/;docker.io/gsmlg/pipeline-;g'
@@ -22,5 +28,5 @@ UPDATED=$( echo "${FILE}" | sed 's;gcr.io/tekton-releases/github.com/tektoncd/pi
 
 echo "$UPDATED" > updated.yaml
 
-echo "$UPDATED"
+#echo "$UPDATED"
 
