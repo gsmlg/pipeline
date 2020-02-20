@@ -2,7 +2,7 @@
 
 #require 'file'
 
-File.open "release.yaml" do |f|
+File.open "tekton.yaml" do |f|
   cnt = File.read f
   #$stdout.print cnt
 
@@ -22,6 +22,6 @@ File.open "release.yaml" do |f|
     `echo #{newUrl} >> tekton-images.txt`
   end
   
-  File.write 'updated.yaml', newCnt
+  File.write 'updated_tekton.yaml', newCnt
 end
 
