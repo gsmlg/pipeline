@@ -11,7 +11,7 @@ File.open "tekton.yaml" do |f|
 
   out.each do |url|
     puts url
-    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/pipeline.*\/cmd\//, 'docker.io/gsmlg/tekton-pipeline-').sub(/@.+$/, '')
+    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/pipeline.*\/cmd\//, 'docker.io/zdnscloud/tekton-pipeline-').sub(/@.+$/, '')
     newCnt.gsub!(url, newUrl)
     puts newUrl
     puts `docker pull #{url}`
@@ -35,7 +35,7 @@ File.open "tekton-dashboard.yaml" do |f|
   # gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
   out.each do |url|
     puts url
-    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/dashboard.*\/cmd\//, 'docker.io/gsmlg/tekton-dashboard-').sub(/@.+$/, ":#{DASHBOARD_VERSION}")
+    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/dashboard.*\/cmd\//, 'docker.io/zdnscloud/tekton-dashboard-').sub(/@.+$/, ":#{DASHBOARD_VERSION}")
     newCnt.gsub!(url, newUrl)
     puts newUrl
     puts `docker pull #{url}`
@@ -44,9 +44,8 @@ File.open "tekton-dashboard.yaml" do |f|
     `echo #{newUrl} >> tekton-images.txt`
   end
   
-  File.write 'updated_tekton.yaml', newCnt
+  File.write 'updated_dashboard.yaml', newCnt
 end
-
 
 
 
