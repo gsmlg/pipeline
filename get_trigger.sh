@@ -4,7 +4,7 @@ FILE=$(curl -sSL https://storage.googleapis.com/tekton-releases/triggers/latest/
 
 IMAGES=$( echo "${FILE}" | grep gcr.io |awk '{print $2}')
 
-VAR="v0.0.1"
+VAR="v0.4.0"
 
 for img in $IMAGES
 do

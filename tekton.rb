@@ -11,7 +11,7 @@ File.open "tekton.yaml" do |f|
 
   out.each do |url|
     puts url
-    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/pipeline.*\/cmd\//, 'docker.io/zdnscloud/tekton-pipeline-').sub(/@.+$/, '')
+    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/pipeline.*\/cmd\//, 'docker.io/gsmlg/tekton-pipeline-').sub(/@.+$/, '')
     newCnt.gsub!(url, newUrl)
     puts newUrl
     puts `docker pull #{url}`
@@ -24,7 +24,7 @@ File.open "tekton.yaml" do |f|
 end
 
 File.open "tekton-dashboard.yaml" do |f|
-  DASHBOARD_VERSION = "v0.5.1"
+  DASHBOARD_VERSION = "release"
   cnt = File.read f
 
   reg = /gcr.io[\/A-Za-z0-9.:@-]+/
@@ -35,7 +35,7 @@ File.open "tekton-dashboard.yaml" do |f|
   # gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
   out.each do |url|
     puts url
-    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/dashboard.*\/cmd\//, 'docker.io/zdnscloud/tekton-dashboard-').sub(/@.+$/, ":#{DASHBOARD_VERSION}")
+    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/dashboard.*\/cmd\//, 'docker.io/gsmlg/tekton-dashboard-').sub(/@.+$/, ":#{DASHBOARD_VERSION}")
     newCnt.gsub!(url, newUrl)
     puts newUrl
     puts `docker pull #{url}`
@@ -46,6 +46,32 @@ File.open "tekton-dashboard.yaml" do |f|
   
   File.write 'updated_dashboard.yaml', newCnt
 end
+
+
+File.open "tekton-trigger.yaml" do |f|
+  DASHBOARD_VERSION = "release"
+  cnt = File.read f
+
+  reg = /gcr.io[\/A-Za-z0-9.:@-]+/
+  out = cnt.scan reg
+
+  newCnt = cnt
+
+  # gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
+  out.each do |url|
+    puts url
+    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/dashboard.*\/cmd\//, 'docker.io/gsmlg/tekton-dashboard-').sub(/@.+$/, ":#{DASHBOARD_VERSION}")
+    newCnt.gsub!(url, newUrl)
+    puts newUrl
+    puts `docker pull #{url}`
+    puts `docker tag #{url} #{newUrl}`
+    puts `docker push #{newUrl}`
+    `echo #{newUrl} >> tekton-images.txt`
+  end
+  
+  File.write 'updated_trigger.yaml', newCnt
+end
+
 
 
 
