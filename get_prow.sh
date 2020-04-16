@@ -11,9 +11,9 @@ do
     echo $img
     toimg=$(echo $img | sed 's;gcr.io/k8s-prow/;docker.io/gsmlg/k8s-prow-;g')
     #echo $toimg
-    podman pull $img
-    podman tag "$img" "$toimg"
-    podman push "$toimg"
+    docker pull $img
+    docker tag "$img" "$toimg"
+    docker push "$toimg"
 done
 
 UPDATED=$( echo "${FILE}" | sed 's;gcr.io/k8s-prow/;docker.io/gsmlg/k8s-prow-;g' )
