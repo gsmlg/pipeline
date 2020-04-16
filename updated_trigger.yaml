@@ -601,8 +601,8 @@ spec:
       serviceAccountName: tekton-triggers-controller
       containers:
       - name: tekton-triggers-controller
-        image: gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/controller:release
-        args: ["-logtostderr", "-stderrthreshold", "INFO", "-el-image", "gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink:release",
+        image: docker.io/gsmlg/tekton-triggers-controller:v0.4.0
+        args: ["-logtostderr", "-stderrthreshold", "INFO", "-el-image", "docker.io/gsmlg/tekton-triggers-eventlistenersink:v0.4.0",
           "-el-port", "8080", "-period-seconds", "10", "-failure-threshold", "1"]
         env:
         - name: SYSTEM_NAMESPACE
@@ -682,7 +682,7 @@ spec:
       - name: webhook
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/webhook:release
+        image: docker.io/gsmlg/tekton-triggers-webhook:v0.4.0
         env:
         - name: SYSTEM_NAMESPACE
           valueFrom:
