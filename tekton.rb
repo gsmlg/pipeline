@@ -24,7 +24,7 @@ File.open "tekton.yaml" do |f|
 end
 
 File.open "tekton-dashboard.yaml" do |f|
-  DASHBOARD_VERSION = "v0.5.3"
+  DASHBOARD_VERSION = "v0.6.1"
   cnt = File.read f
 
   reg = /gcr.io[\/A-Za-z0-9.:@-]+/
