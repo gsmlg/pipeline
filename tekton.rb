@@ -24,7 +24,7 @@ File.open "tekton.yaml" do |f|
 end
 
 File.open "tekton-dashboard.yaml" do |f|
-  DASHBOARD_VERSION = "release"
+  DASHBOARD_VERSION = "v0.5.3"
   cnt = File.read f
 
   reg = /gcr.io[\/A-Za-z0-9.:@-]+/
@@ -49,7 +49,7 @@ end
 
 
 File.open "tekton-trigger.yaml" do |f|
-  DASHBOARD_VERSION = "release"
+  TRIGGER_VERSION = "v0.4.0"
   cnt = File.read f
 
   reg = /gcr.io[\/A-Za-z0-9.:@-]+/
@@ -57,10 +57,10 @@ File.open "tekton-trigger.yaml" do |f|
 
   newCnt = cnt
 
-  # gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
+  # gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/
   out.each do |url|
     puts url
-    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/dashboard.*\/cmd\//, 'docker.io/gsmlg/tekton-dashboard-').sub(/@.+$/, ":#{DASHBOARD_VERSION}")
+    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/triggers\/cmd\//, 'docker.io/gsmlg/tekton-triggers-').sub(/@.+$/, ":#{TRIGGER_VERSION}")
     newCnt.gsub!(url, newUrl)
     puts newUrl
     puts `docker pull #{url}`
