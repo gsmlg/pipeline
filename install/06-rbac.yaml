@@ -1,0 +1,72 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pipeline-run-role
+rules:
+- apiGroups:
+  - ""
+  - extensions
+  resources:
+  - deployments
+  - configmaps
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pipeline-run-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pipeline-run-role
+subjects:
+- kind: ServiceAccount
+  name: pipeline-run-service
+  namespace: cicd
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pipeline-run-service
+  namespace: cicd
+secrets:
+  - name: regcred
+  - name: ssh-key
+
+---
+
+apiVersion: v1
+data:
+  .dockerconfigjson:
+kind: Secret
+metadata:
+  name: regcred
+  namespace: cicd
+type: kubernetes.io/dockerconfigjson
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ssh-key
+  annotations:
+    tekton.dev/git-0: github.com # Described below
+type: kubernetes.io/ssh-auth
+data:
+  ssh-privatekey: <base64 encoded>
+  # This is non-standard, but its use is encouraged to make this more secure.
+  known_hosts: <base64 encoded>
+

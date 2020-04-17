@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: npm-run
+  namespace: cicd
+spec:
+  params:
+    - name: prefix
+      type: string
+      default: .
+    - name: cmd
+      type: string
+      default: lint
+  resources:
+    inputs:
+    - name: source
+      type: git
+  steps:
+  - name: install
+    workingDir: /workspace/source
+    image: node:12-alpine
+    script: |
+      #!/bin/sh
+      rm yarn.lock
+      yarn
+      echo "\033[32m" "Install complete" "\033[0m"
+    volumeMounts:
+      - name: yarnrc
+        mountPath: /tekton/home/.yarnrc
+        subPath: config
+      #- name: yarn-cache
+      #  mountPath: /workspace/yarn-cache
+  - name: node-lint
+    workingDir: /workspace/source
+    image: node:12-alpine
+    command:
+    - npm
+    - --prefix=$(params.prefix)
+    - run
+    - $(params.cmd)
+  volumes:
+    - name: yarnrc
+      configMap:
+        name: yarnrc
+    #- name: yarn-cache
+    #  persistentVolumeClaim:
+    #    claimName: yarn-cache
