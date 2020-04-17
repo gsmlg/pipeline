@@ -49,7 +49,7 @@ secrets:
 
 apiVersion: v1
 data:
-  .dockerconfigjson:
+  .dockerconfigjson: e30K
 kind: Secret
 metadata:
   name: regcred
@@ -66,9 +66,9 @@ metadata:
     tekton.dev/git-0: github.com # Described below
 type: kubernetes.io/ssh-auth
 data:
-  ssh-privatekey: <base64 encoded>
+  ssh-privatekey: bHNqa2RmbGFqa3NkbGZqYQo=
   # This is non-standard, but its use is encouraged to make this more secure.
-  known_hosts: <base64 encoded>
+  #known_hosts: <base64 encoded>
 
 ---
 
