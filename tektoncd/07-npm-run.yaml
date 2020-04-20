@@ -11,6 +11,9 @@ spec:
     - name: cmd
       type: string
       default: lint
+    - name: info
+      type: string
+      default: "---"
   resources:
     inputs:
     - name: source
@@ -21,6 +24,9 @@ spec:
     image: node:12-alpine
     script: |
       #!/bin/sh
+      cat <<EOF
+      $(params.info)
+      EOF
       rm yarn.lock
       yarn
       echo '\033[32m[Install complete]\033[0m'
@@ -28,8 +34,8 @@ spec:
       - name: yarnrc
         mountPath: /tekton/home/.yarnrc
         subPath: config
-      #- name: yarn-cache
-      #  mountPath: /workspace/yarn-cache
+      - name: yarn-cache
+        mountPath: /workspace/yarn-cache
   - name: node-lint
     workingDir: /workspace/source
     image: node:12-alpine
@@ -42,6 +48,6 @@ spec:
     - name: yarnrc
       configMap:
         name: yarnrc
-    #- name: yarn-cache
-    #  persistentVolumeClaim:
-    #    claimName: yarn-cache
+    - name: yarn-cache
+      persistentVolumeClaim:
+        claimName: yarn-cache
