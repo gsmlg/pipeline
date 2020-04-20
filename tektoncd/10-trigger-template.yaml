@@ -34,9 +34,7 @@ spec:
             - name: cmd
               value: lint
             - name: info
-              value: |
-                commit user: $(params.user_name) <$(params.user_email)>
-                commit ref: $(params.ref)
+              value: "commit user: $(params.user_name) <$(params.user_email)> \ncommit ref: $(params.ref)"
           resources:
             inputs:
               - name: source
@@ -88,9 +86,7 @@ spec:
             - name: cmd
               value: test
             - name: info
-              value: |
-                commit user: $(params.user_name) <$(params.user_email)>
-                commit ref: $(params.ref)
+              value: "commit user: $(params.user_name) <$(params.user_email)> \ncommit ref: $(params.ref)"
           resources:
             inputs:
               - name: source

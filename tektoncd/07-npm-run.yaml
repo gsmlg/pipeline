@@ -28,8 +28,8 @@ spec:
       $(params.info)
       EOF
       rm yarn.lock
-      yarn
-      echo '\033[32m[Install complete]\033[0m'
+      yarn --offline
+      echo \033[32m[Install complete]\033[0m
     volumeMounts:
       - name: yarnrc
         mountPath: /tekton/home/.yarnrc
