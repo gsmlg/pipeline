@@ -12,8 +12,14 @@ spec:
     description: The git repository url
     default: git@git.zdns.cn:zdns/zddiv3-web.git
   - name: user_name
+    description: The gitlab user display name
+    default: ''
   - name: user_email
+    description: The gitlab user email
+    default: ''
   - name: ref
+    description: The git commit ref
+    default: ''
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: TaskRun
@@ -27,6 +33,10 @@ spec:
           params:
             - name: cmd
               value: lint
+            - name: info
+              value: |
+                commit user: $(params.user_name) <$(params.user_email)>
+                commit ref: $(params.ref)
           resources:
             inputs:
               - name: source
