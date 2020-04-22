@@ -76,7 +76,7 @@ spec:
     - apiVersion: tekton.dev/v1beta1
       kind: TaskRun
       metadata:
-        generateName: npm-run-lint-
+        generateName: npm-run-test-
         namespace: cicd
       spec:
           serviceAccountName: pipeline-run-service
