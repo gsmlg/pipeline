@@ -1,0 +1,308 @@
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: sendmail-after-push
+spec:
+  params:
+  - name: server
+    type: string
+    description: secret name for SMTP server information (url, port, password)
+  - name: subject
+    type: string
+    description: plain text email subject
+  - name: sender
+    type: string
+    description: zddiweb@zdns.cn
+  - name: recipients
+    type: string
+    description: recipient email addresses (space delimited list)
+    default: "zddiweb@zdns.cn"
+  - name: lint
+    type: string
+  - name: test
+    type: string
+  - name: build
+    type: string
+  - name: lintResult
+    type: string
+  - name: testResult
+    type: string
+  - name: buildResult
+    type: string
+  resources:
+    inputs:
+    - name: source
+      type: git
+  steps:
+  - name: send
+    workingDir: /workspace/source
+    image: python:3.8-alpine
+    script: |
+      #!/usr/bin/env python3
+      import smtplib, ssl, os
+      port = os.getenv('PORT')
+      smtp_server = os.getenv('SERVER')
+      sender_email = "$(params.sender)"
+      receiver_emails = "$(params.recipients)"
+      user = os.getenv('USER')
+      password = os.getenv('PASSWORD')
+      tls = os.getenv('TLS')
+      message = f"""\
+      Subject: $(params.subject)
+      To: {receiver_emails}
+      From: {sender_email}
+      Lint Result <$(params.lintResult)>: 
+      $(params.lint)
+
+      Test Result <$(params.testResult)>:
+      $(params.test)
+
+      Build Result <$(params.buildResult)>:
+      $(params.build)"""
+      print(message)
+      if tls == 'True':
+          context = ssl.create_default_context()
+          server = smtplib.SMTP_SSL(smtp_server, port, context=context)
+      else:
+          server = smtplib.SMTP(smtp_server, port)
+      if password != '':
+          server.login(user, password)
+      for receiver in receiver_emails.split(' '):
+          server.sendmail(sender_email, receiver, message)
+      server.quit()
+    env:
+    - name: USER
+      valueFrom:
+        secretKeyRef:
+          name: $(params.server)
+          key: user
+    - name: PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: $(params.server)
+          key: password
+    - name: TLS
+      valueFrom:
+        secretKeyRef:
+          name: $(params.server)
+          key: tls
+    - name: SERVER
+      valueFrom:
+        secretKeyRef:
+          name: $(params.server)
+          key: url
+    - name: PORT
+      valueFrom:
+        secretKeyRef:
+          name: $(params.server)
+          key: port
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: yarn-run
+  namespace: cicd
+spec:
+  params:
+    - name: cmd
+      type: string
+      default: lint
+  resources:
+    inputs:
+    - name: source
+      type: git
+  results:
+    - name: output
+      description: task run output
+    - name: result
+      description: task run result
+  steps:
+    - name: install
+      workingDir: /workspace/source
+      image: node:12-alpine
+      script: |
+        #!/bin/sh
+        time_start=$(date +%s)
+        yarn --offline || yarn
+        time_end=$(($(date +%s) - $time_start))
+        echo "[Install complete] in ${time_end} seconds"
+      volumeMounts:
+        - name: yarnrc
+          mountPath: /tekton/home/.yarnrc
+          subPath: config
+        - name: yarn-cache
+          mountPath: /workspace/yarn-cache
+    - name: run
+      workingDir: /workspace/source
+      image: node:12-alpine
+      script: |
+        #!/bin/sh
+        yarn run $(params.cmd) | tee /tekton/results/output
+        echo $? | tee /tekton/results/result
+  volumes:
+    - name: yarnrc
+      configMap:
+        name: yarnrc
+    - name: yarn-cache
+      persistentVolumeClaim:
+        claimName: yarn-cache
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: zddi-web-ci-pipeline
+spec:
+  params:
+    - name: project_name
+      type: string
+      description: project name
+      default: zddiv3-web
+    - name: revision
+      type: string
+      default: master
+    - name: ref
+      type: string
+      default: refs/origin/master
+    - name: user_name
+      type: string
+      description: gitlab user display name
+      default: 'bot'
+    - name: user_username
+      type: string
+      description: git username
+      default: zddiweb-bot
+    - name: user_email
+      type: string
+      description: gitlab user email
+      default: zddiweb@zdns.cn
+  resources:
+    inputs:
+      - name: source
+        type: git
+  tasks:
+    - name: lint
+      taskRef:
+        name: npm-run
+      params:
+        - name: cmd
+          value: lint
+      resources:
+        inputs:
+          - name: source
+            value: $(resources.inputs.source)
+    - name: test
+      taskRef:
+        name: npm-run
+      params:
+        - name: cmd
+          value: test
+      resources:
+        inputs:
+          - name: source
+            value: $(resources.inputs.source)
+    - name: build
+      taskRef:
+        name: npm-run
+      params:
+        - name: cmd
+          value: build
+      resources:
+        inputs:
+          - name: source
+            value: $(resources.inputs.source)
+    - name: report
+      taskRef:
+        name: sendmail-after-push
+      runAfter:
+        - lint
+        - test
+        - build
+      params:
+        - name: lint
+          value: $(tasks.lint.results.output)
+        - name: test
+          value: $(tasks.test.results.output)
+        - name: build
+          value: $(tasks.build.results.output)
+        - name: lintResult
+          value: $(tasks.lint.results.result)
+        - name: testResult
+          value: $(tasks.test.results.result)
+        - name: buildResult
+          value: $(tasks.build.results.result)
+        - name: recipients
+          value: $(params.user_email)
+        - name: server
+          value: gsmlg-email
+        - name: subject
+          value: |-
+            您：$(params.user_name)（$(params.user_username)）提交请求<$(params.ref)>($(params.revision)) CI 运行结果
+
+
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: zddiv3-web-push-pipeline
+  namespace: cicd
+spec:
+  params:
+  - name: project_name
+    description: Project Name
+    default: zddiv3-web
+  - name: revision
+    description: The git revision
+    default: master
+  - name: repository_url
+    description: The git repository url
+    default: git@git.zdns.cn:zdns/zddiv3-web.git
+  - name: user_name
+    description: The gitlab user display name
+    default: ''
+  - name: user_email
+    description: The gitlab user email
+    default: ''
+  - name: ref
+    description: The git commit ref
+    default: ''
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: web-push-pipeline-run-
+        namespace: cicd
+      spec:
+          serviceAccountName: pipeline-run-service
+          pipelineRef:
+            name: zddi-web-ci-pipeline
+          params:
+            - name: project_name
+              value: $(params.project_name)
+            - name: revision
+              value: $(params.revision)
+            - name: ref
+              value: $(params.ref)
+            - name: user_name
+              value: $(params.user_name)
+            - name: user_username
+              value: $(params.user_username)
+            - name: user_email
+              value: $(params.user_email)
+          resources:
+            inputs:
+              - name: source
+                resourceSpec:
+                  type: git
+                  params:
+                    - name: revision
+                      value: $(params.revision)
+                    - name: url
+                      value: $(params.repository_url)
+                    - name: submodules
+                      value: "false"
+

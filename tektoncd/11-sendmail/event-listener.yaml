@@ -1,12 +1,12 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
-  name: gitlab-listener-interceptor
+  name: sendmail-listener-interceptor
   namespace: cicd
 spec:
   serviceAccountName: tekton-triggers-sa
   triggers:
-    - name: lint-on-push
+    - name: send-email
       interceptors:
         - gitlab:
             eventTypes:
@@ -15,12 +15,12 @@ spec:
         - name: gitlab-event-bindings
       template:
         name: zddiv3-web-lint
-    - name: push-pipeline
+    - name: test-on-merge-request
       interceptors:
         - gitlab:
             eventTypes:
-              - Push Hook
+              - Merge Request Hook
       bindings:
         - name: gitlab-event-bindings
       template:
-        name: zddiv3-web-push-pipeline
+        name: zddiv3-web-test
