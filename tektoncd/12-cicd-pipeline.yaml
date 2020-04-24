@@ -3,40 +3,38 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: sendmail-after-push
+  namespace: cicd
 spec:
   params:
-  - name: server
-    type: string
-    description: secret name for SMTP server information (url, port, password)
-  - name: subject
-    type: string
-    description: plain text email subject
-  - name: sender
-    type: string
-    description: zddiweb@zdns.cn
-  - name: recipients
-    type: string
-    description: recipient email addresses (space delimited list)
-    default: "zddiweb@zdns.cn"
-  - name: lint
-    type: string
-  - name: test
-    type: string
-  - name: build
-    type: string
-  - name: lintResult
-    type: string
-  - name: testResult
-    type: string
-  - name: buildResult
-    type: string
-  resources:
-    inputs:
-    - name: source
-      type: git
+    - name: server
+      type: string
+      description: secret name for SMTP server information (url, port, password)
+    - name: subject
+      type: string
+      description: plain text email subject
+      default: 'Title'
+    - name: sender
+      type: string
+      description: Email from section
+      default: "zddiweb@zdns.cn"
+    - name: recipients
+      type: string
+      description: recipient email addresses (space delimited list)
+      default: "zddiweb@zdns.cn"
+    - name: lint
+      type: string
+    - name: test
+      type: string
+    - name: build
+      type: string
+    - name: lintResult
+      type: string
+    - name: testResult
+      type: string
+    - name: buildResult
+      type: string
   steps:
   - name: send
-    workingDir: /workspace/source
     image: python:3.8-alpine
     script: |
       #!/usr/bin/env python3
@@ -156,6 +154,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: zddi-web-ci-pipeline
+  namespace: cicd
 spec:
   params:
     - name: project_name
@@ -186,7 +185,7 @@ spec:
   tasks:
     - name: lint
       taskRef:
-        name: npm-run
+        name: yarn-run
       params:
         - name: cmd
           value: lint
@@ -196,7 +195,7 @@ spec:
             resource: source
     - name: test
       taskRef:
-        name: npm-run
+        name: yarn-run
       params:
         - name: cmd
           value: test
@@ -206,7 +205,7 @@ spec:
             resource: source
     - name: build
       taskRef:
-        name: npm-run
+        name: yarn-run
       params:
         - name: cmd
           value: build
@@ -234,6 +233,8 @@ spec:
           value: $(tasks.test.results.result)
         - name: buildResult
           value: $(tasks.build.results.result)
+        - name: sender
+          value: WebBot<zddiweb@zdns.cn>
         - name: recipients
           value: $(params.user_email)
         - name: server
