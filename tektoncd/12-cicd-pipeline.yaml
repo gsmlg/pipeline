@@ -138,8 +138,8 @@ spec:
       image: node:12-alpine
       script: |
         #!/bin/sh
-        yarn run $(params.cmd) | tee /tekton/results/output
-        echo $? | tee /tekton/results/result
+        yarn run $(params.cmd) | tee $(results.output.path)
+        echo $? | tee $(results.result.path)
   volumes:
     - name: yarnrc
       configMap:
@@ -193,6 +193,7 @@ spec:
         inputs:
           - name: source
             resource: source
+      timeout: "4h"
     - name: test
       taskRef:
         name: yarn-run
@@ -203,6 +204,7 @@ spec:
         inputs:
           - name: source
             resource: source
+      timeout: "4h"
     - name: build
       taskRef:
         name: yarn-run
@@ -213,6 +215,7 @@ spec:
         inputs:
           - name: source
             resource: source
+      timeout: "4h"
     - name: report
       taskRef:
         name: sendmail-after-push
@@ -242,8 +245,8 @@ spec:
         - name: subject
           value: $(params.user_name)（$(params.user_username)）提交请求<$(params.ref)>($(params.revision)) CI 运行结果
 
-
 ---
+
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
