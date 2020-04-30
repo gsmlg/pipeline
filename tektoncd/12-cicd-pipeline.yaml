@@ -16,7 +16,7 @@ spec:
     - name: sender
       type: string
       description: Email from section
-      default: "zddiweb@zdns.cn"
+      default: "webbot@zdns.cn"
     - name: recipients
       type: string
       description: recipient email addresses (space delimited list)
@@ -176,7 +176,7 @@ spec:
     - name: user_username
       type: string
       description: git username
-      default: zddiweb-bot
+      default: webot
     - name: user_email
       type: string
       description: gitlab user email
@@ -195,7 +195,7 @@ spec:
         inputs:
           - name: source
             resource: source
-      timeout: "4h"
+      timeout: "4h0m0s"
     - name: test
       taskRef:
         name: yarn-run
@@ -206,7 +206,7 @@ spec:
         inputs:
           - name: source
             resource: source
-      timeout: "4h"
+      timeout: "4h0m0s"
     - name: build
       taskRef:
         name: yarn-run
@@ -217,7 +217,7 @@ spec:
         inputs:
           - name: source
             resource: source
-      timeout: "4h"
+      timeout: "4h0m0s"
     - name: report
       taskRef:
         name: sendmail-after-push
@@ -239,7 +239,7 @@ spec:
         - name: buildResult
           value: $(tasks.build.results.result)
         - name: sender
-          value: WebBot<zddiweb@zdns.cn>
+          value: WebBot<webbot@zdns.cn>
         - name: recipients
           value: $(params.user_email)
         - name: server
