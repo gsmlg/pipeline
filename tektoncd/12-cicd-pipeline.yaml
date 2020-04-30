@@ -286,6 +286,7 @@ spec:
           serviceAccountName: pipeline-run-service
           pipelineRef:
             name: zddi-web-ci-pipeline
+          timeout: "4h0m0s"
           params:
             - name: project_name
               value: $(params.project_name)
