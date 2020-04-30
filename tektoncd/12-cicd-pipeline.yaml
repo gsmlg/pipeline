@@ -58,6 +58,7 @@ spec:
 
       Build Result <$(params.buildResult)>:
       $(params.build)"""
+      message = message.encode('utf-8').strip()
       print(message)
       if tls == 'True':
           context = ssl.create_default_context()
