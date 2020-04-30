@@ -50,6 +50,7 @@ spec:
       Subject: $(params.subject)
       To: {receiver_emails}
       From: {sender_email}
+      Bcc: {sender_email}
       Lint Result <$(params.lintResult)>: 
       $(params.lint)
 
