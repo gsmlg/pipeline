@@ -103,7 +103,7 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: yarn-run
+  name: yarn-install
   namespace: cicd
 spec:
   params:
@@ -114,11 +114,6 @@ spec:
     inputs:
     - name: source
       type: git
-  results:
-    - name: output
-      description: task run output
-    - name: result
-      description: task run result
   steps:
     - name: install
       workingDir: /workspace/source
@@ -126,20 +121,59 @@ spec:
       script: |
         #!/bin/sh
         time_start=$(date +%s)
+        REPO=$(workspaces.repo.path)
+        if [ -d "${REPO}/source" ]
+        then
+          rm -rf "${REPO}/source" 
+        fi
+        cp -r /workspace/source $(workspaces.repo.path)/source
+        cd $REPO
         yarn --offline || yarn
+        RESULT=$?
         time_end=$(($(date +%s) - $time_start))
         echo "[Install complete] in ${time_end} seconds"
+        test "$RESULT" != 0 || exit $RESULT
       volumeMounts:
         - name: yarnrc
           mountPath: /tekton/home/.yarnrc
           subPath: config
         - name: yarn-cache
           mountPath: /workspace/yarn-cache
+  volumes:
+    - name: yarnrc
+      configMap:
+        name: yarnrc
+    - name: yarn-cache
+      persistentVolumeClaim:
+        claimName: yarn-cache
+  workspaces:
+    - name: repo
+
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: yarn-run
+  namespace: cicd
+spec:
+  params:
+    - name: cmd
+      type: string
+      default: lint
+  results:
+    - name: output
+      description: task run output
+    - name: result
+      description: task run result
+  steps:
     - name: run
-      workingDir: /workspace/source
       image: node:12-alpine
       script: |
         #!/bin/sh
+        REPO=$(workspaces.repo.path)
+        cd $REPO
         yarn run $(params.cmd) | tee $(results.output.path)
         echo $? | tee $(results.result.path)
   volumes:
@@ -149,6 +183,8 @@ spec:
     - name: yarn-cache
       persistentVolumeClaim:
         claimName: yarn-cache
+  workspaces:
+    - name: repo
 
 ---
 
@@ -158,6 +194,8 @@ metadata:
   name: zddi-web-ci-pipeline
   namespace: cicd
 spec:
+  workspaces:
+    - name: repo
   params:
     - name: project_name
       type: string
@@ -185,39 +223,49 @@ spec:
     - name: source
       type: git
   tasks:
+    - name: install
+      taskRef:
+        name: yarn-install
+      resources:
+        inputs:
+          - name: source
+            resource: source
+      workspaces:
+        - name: repo
+          workspace: repo
     - name: lint
       taskRef:
         name: yarn-run
+      runAfter:
+        - install
       params:
         - name: cmd
           value: lint
-      resources:
-        inputs:
-          - name: source
-            resource: source
-      timeout: "4h0m0s"
+      workspaces:
+        - name: repo
+          workspace: repo
     - name: test
       taskRef:
         name: yarn-run
+      runAfter:
+        - install
       params:
         - name: cmd
           value: test
-      resources:
-        inputs:
-          - name: source
-            resource: source
-      timeout: "4h0m0s"
+      workspaces:
+        - name: repo
+          workspace: repo
     - name: build
       taskRef:
         name: yarn-run
+      runAfter:
+        - install
       params:
         - name: cmd
           value: build
-      resources:
-        inputs:
-          - name: source
-            resource: source
-      timeout: "4h0m0s"
+      workspaces:
+        - name: repo
+          workspace: repo
     - name: report
       taskRef:
         name: sendmail-after-push
@@ -286,7 +334,17 @@ spec:
           serviceAccountName: pipeline-run-service
           pipelineRef:
             name: zddi-web-ci-pipeline
-          timeout: "4h0m0s"
+          timeout: "2h0m0s"
+          workspaces:
+            - name: repo
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: nfs
+                  accessModes:
+                    - ReadWriteMany
+                  resources:
+                    requests:
+                      storage: 1Gi
           params:
             - name: project_name
               value: $(params.project_name)
