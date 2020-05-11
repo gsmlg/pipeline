@@ -106,24 +106,17 @@ metadata:
   name: yarn-install
   namespace: cicd
 spec:
-  resources:
-    inputs:
-    - name: source
-      type: git
+  workspaces:
+    - name: repo
   steps:
     - name: install
-      workingDir: /workspace/source
+      workingDir: $(workspaces.repo.path)
       image: node:12-alpine
       script: |
         #!/bin/sh
         time_start=$(date +%s)
         REPO=$(workspaces.repo.path)
-        if [ -d "${REPO}/source" ]
-        then
-          rm -rf "${REPO}/source" 
-        fi
-        cp -r /workspace/source $(workspaces.repo.path)/source
-        cd $REPO/source
+        echo "REPO: ${REPO}"
         yarn --offline || yarn
         RESULT=$?
         time_end=$(($(date +%s) - $time_start))
@@ -142,8 +135,7 @@ spec:
     - name: yarn-cache
       persistentVolumeClaim:
         claimName: yarn-cache
-  workspaces:
-    - name: repo
+
 
 
 ---
@@ -165,11 +157,11 @@ spec:
       description: task run result
   steps:
     - name: run
+      workingDir: $(workspaces.repo.path)
       image: node:12-alpine
       script: |
         #!/bin/sh
         REPO=$(workspaces.repo.path)
-        cd $REPO/source
         yarn run $(params.cmd) | tee $(results.output.path)
         echo $? | tee $(results.result.path)
   volumes:
@@ -197,6 +189,9 @@ spec:
       type: string
       description: project name
       default: zddiv3-web
+    - name: repository_url
+      type: string
+      default: git@git.zdns.cn:zdns/zddiv3-web.git
     - name: revision
       type: string
       default: master
@@ -215,17 +210,25 @@ spec:
       type: string
       description: gitlab user email
       default: zddiweb@zdns.cn
-  resources:
-    - name: source
-      type: git
   tasks:
+    - name: clone
+      taskRef: 
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: repo
+      params:
+        - name: url
+          value: $(params.repository_url)
+        - name: revision
+          value: $(params.revision)
+        - name: submodules
+          value: "false"
     - name: install
       taskRef:
         name: yarn-install
-      resources:
-        inputs:
-          - name: source
-            resource: source
+      runAfter:
+        - clone
       workspaces:
         - name: repo
           workspace: repo
@@ -330,7 +333,6 @@ spec:
           serviceAccountName: pipeline-run-service
           pipelineRef:
             name: zddi-web-ci-pipeline
-          timeout: "2h0m0s"
           workspaces:
             - name: repo
               volumeClaimTemplate:
@@ -344,6 +346,8 @@ spec:
           params:
             - name: project_name
               value: $(params.project_name)
+            - name: repository_url
+              value: $(params.repository_url)
             - name: revision
               value: $(params.revision)
             - name: ref
@@ -354,17 +358,4 @@ spec:
               value: $(params.user_username)
             - name: user_email
               value: $(params.user_email)
-            - name: repository_url
-              value: $(params.repository_url)
-          resources:
-            - name: source
-              resourceSpec:
-                type: git
-                params:
-                  - name: revision
-                    value: $(params.revision)
-                  - name: url
-                    value: $(params.repository_url)
-                  - name: submodules
-                    value: "false"
 
