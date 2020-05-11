@@ -106,10 +106,6 @@ metadata:
   name: yarn-install
   namespace: cicd
 spec:
-  params:
-    - name: cmd
-      type: string
-      default: lint
   resources:
     inputs:
     - name: source
@@ -127,7 +123,7 @@ spec:
           rm -rf "${REPO}/source" 
         fi
         cp -r /workspace/source $(workspaces.repo.path)/source
-        cd $REPO
+        cd $REPO/source
         yarn --offline || yarn
         RESULT=$?
         time_end=$(($(date +%s) - $time_start))
@@ -173,7 +169,7 @@ spec:
       script: |
         #!/bin/sh
         REPO=$(workspaces.repo.path)
-        cd $REPO
+        cd $REPO/source
         yarn run $(params.cmd) | tee $(results.output.path)
         echo $? | tee $(results.result.path)
   volumes:
@@ -358,6 +354,8 @@ spec:
               value: $(params.user_username)
             - name: user_email
               value: $(params.user_email)
+            - name: repository_url
+              value: $(params.repository_url)
           resources:
             - name: source
               resourceSpec:
