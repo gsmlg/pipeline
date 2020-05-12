@@ -1,4 +1,4 @@
-
+---
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -36,7 +36,7 @@ spec:
   steps:
   - name: send
     image: python:3.8-alpine
-    script: |
+    script: |-
       #!/usr/bin/env python3
       import smtplib, ssl, os
       port = os.getenv('PORT')
@@ -51,14 +51,27 @@ spec:
       To: {receiver_emails}
       From: {sender_email}
       Bcc: {sender_email}
+
+      ===
+
+      $(params.subject)
+
+      ===
+      
       Lint Result <$(params.lintResult)>: 
       $(params.lint)
+
+      ===
 
       Test Result <$(params.testResult)>:
       $(params.test)
 
+      ===
+
       Build Result <$(params.buildResult)>:
-      $(params.build)"""
+      $(params.build)
+
+      ==="""
       message = message.encode('utf-8').strip()
       print(message)
       if tls == 'True':
@@ -127,7 +140,7 @@ spec:
           mountPath: /tekton/home/.yarnrc
           subPath: config
         - name: yarn-cache
-          mountPath: /workspace/yarn-cache
+          mountPath: /yarn-cache
   volumes:
     - name: yarnrc
       configMap:
@@ -164,6 +177,12 @@ spec:
         REPO=$(workspaces.repo.path)
         yarn run $(params.cmd) | tee $(results.output.path)
         echo $? | tee $(results.result.path)
+      volumeMounts:
+        - name: yarnrc
+          mountPath: /tekton/home/.yarnrc
+          subPath: config
+        - name: yarn-cache
+          mountPath: /yarn-cache
   volumes:
     - name: yarnrc
       configMap:
@@ -337,9 +356,9 @@ spec:
             - name: repo
               volumeClaimTemplate:
                 spec:
-                  storageClassName: nfs
+                  storageClassName: local-path
                   accessModes:
-                    - ReadWriteMany
+                    - ReadWriteOnce
                   resources:
                     requests:
                       storage: 1Gi
