@@ -21,20 +21,13 @@ spec:
       type: string
       description: recipient email addresses (space delimited list)
       default: "zddiweb@zdns.cn"
-    - name: lint
-      type: string
-    - name: test
-      type: string
-    - name: build
-      type: string
     - name: lintResult
-      type: string
-    - name: testResult
       type: string
     - name: buildResult
       type: string
   steps:
   - name: send
+    workingDir: $(workspaces.repo.path)
     image: python:3.8-alpine
     script: |-
       #!/usr/bin/env python3
@@ -46,6 +39,10 @@ spec:
       user = os.getenv('USER')
       password = os.getenv('PASSWORD')
       tls = os.getenv('TLS')
+      lintFile = open('lint-log.txt', 'r')
+      lintText = lintFile.read()
+      buildFile = open('build-log.txt', 'r')
+      buildText = buildFile.read()
       message = f"""\
       Subject: $(params.subject)
       To: {receiver_emails}
@@ -59,17 +56,12 @@ spec:
       ===
       
       Lint Result <$(params.lintResult)>: 
-      $(params.lint)
-
-      ===
-
-      Test Result <$(params.testResult)>:
-      $(params.test)
+      $(lintText)
 
       ===
 
       Build Result <$(params.buildResult)>:
-      $(params.build)
+      $(buildText)
 
       ==="""
       message = message.encode('utf-8').strip()
@@ -110,7 +102,8 @@ spec:
         secretKeyRef:
           name: $(params.server)
           key: port
-
+  workspaces:
+    - name: repo
 ---
 
 apiVersion: tekton.dev/v1beta1
@@ -175,7 +168,7 @@ spec:
       script: |
         #!/bin/sh
         REPO=$(workspaces.repo.path)
-        yarn run $(params.cmd) | tee $(results.output.path)
+        yarn run $(params.cmd) | tee $(params.cmd)-log.txt
         echo $? | tee $(results.result.path)
       volumeMounts:
         - name: yarnrc
@@ -262,17 +255,6 @@ spec:
       workspaces:
         - name: repo
           workspace: repo
-    - name: test
-      taskRef:
-        name: yarn-run
-      runAfter:
-        - install
-      params:
-        - name: cmd
-          value: test
-      workspaces:
-        - name: repo
-          workspace: repo
     - name: build
       taskRef:
         name: yarn-run
@@ -289,19 +271,13 @@ spec:
         name: sendmail-after-push
       runAfter:
         - lint
-        - test
         - build
+      workspaces:
+        - name: repo
+          workspace: repo
       params:
-        - name: lint
-          value: $(tasks.lint.results.output)
-        - name: test
-          value: $(tasks.test.results.output)
-        - name: build
-          value: $(tasks.build.results.output)
         - name: lintResult
           value: $(tasks.lint.results.result)
-        - name: testResult
-          value: $(tasks.test.results.result)
         - name: buildResult
           value: $(tasks.build.results.result)
         - name: sender
