@@ -56,12 +56,12 @@ spec:
       ===
       
       Lint Result <$(params.lintResult)>: 
-      $(lintText)
+      {lintText}
 
       ===
 
       Build Result <$(params.buildResult)>:
-      $(buildText)
+      {buildText}
 
       ==="""
       message = message.encode('utf-8').strip()
@@ -328,6 +328,7 @@ spec:
           serviceAccountName: pipeline-run-service
           pipelineRef:
             name: zddi-web-ci-pipeline
+          timeout: "2h0m0s"
           workspaces:
             - name: repo
               volumeClaimTemplate:
