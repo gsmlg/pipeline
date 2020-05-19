@@ -333,9 +333,9 @@ spec:
             - name: repo
               volumeClaimTemplate:
                 spec:
-                  storageClassName: local-path
+                  storageClassName: nfs
                   accessModes:
-                    - ReadWriteOnce
+                    - ReadWriteMany
                   resources:
                     requests:
                       storage: 1Gi
