@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILE=$(curl -sSL https://github.com/kubernetes/test-infra/raw/master/prow/cluster/starter.yaml)
+FILE=$(curl -sSL https://github.com/kubernetes/test-infra/raw/master/config/prow/cluster/starter.yaml)
 
 echo "$FILE" > prow.yaml
 
@@ -10,7 +10,7 @@ for img in $IMAGES
 do
     echo $img
     toimg=$(echo $img | sed 's;gcr.io/k8s-prow/;docker.io/gsmlg/k8s-prow-;g')
-    #echo $toimg
+    echo $toimg
     docker pull $img
     docker tag "$img" "$toimg"
     docker push "$toimg"
