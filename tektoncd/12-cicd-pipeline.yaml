@@ -25,6 +25,10 @@ spec:
       type: string
     - name: buildResult
       type: string
+    - name: pushResult
+      type: string
+    - name: pushOutput
+      type: string
   steps:
   - name: send
     workingDir: $(workspaces.repo.path)
@@ -62,6 +66,11 @@ spec:
 
       Build Result <$(params.buildResult)>:
       {buildText}
+
+      ===
+
+      Push Package: <$(params.pushResult)>:
+      $(params.pushOutput)
 
       ==="""
       message = message.encode('utf-8').strip()
@@ -123,7 +132,7 @@ spec:
         time_start=$(date +%s)
         REPO=$(workspaces.repo.path)
         echo "REPO: ${REPO}"
-        yarn --offline || yarn
+        yarn --offline || rm yarn.lock && yarn
         RESULT=$?
         time_end=$(($(date +%s) - $time_start))
         echo "[Install complete] in ${time_end} seconds"
@@ -183,6 +192,36 @@ spec:
     - name: yarn-cache
       persistentVolumeClaim:
         claimName: yarn-cache
+  workspaces:
+    - name: repo
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: push-build
+  namespace: cicd
+spec:
+  results:
+    - name: output
+      description: task run output
+    - name: result
+      description: task run result
+  steps:
+    - name: push
+      workingDir: $(workspaces.repo.path)
+      image: gsmlg/curl-make-git:zddi-web
+      script: |
+        #!/bin/sh
+        if test -x bin/hash_linux
+        then
+          echo "New version, auto save package" | tee $(results.output.path)
+          make upload | tee $(results.output.path)
+        else
+          echo "Old version, need to upload manually" | tee $(results.output.path)
+        fi
+        echo $? | tee $(results.result.path)
   workspaces:
     - name: repo
 
@@ -266,12 +305,21 @@ spec:
       workspaces:
         - name: repo
           workspace: repo
+    - name: push
+      taskRef:
+        name: build-push
+      runAfter:
+        - build
+      workspaces:
+        - name: repo
+          workspace: repo
     - name: report
       taskRef:
         name: sendmail-after-push
       runAfter:
         - lint
         - build
+        - push
       workspaces:
         - name: repo
           workspace: repo
@@ -280,6 +328,10 @@ spec:
           value: $(tasks.lint.results.result)
         - name: buildResult
           value: $(tasks.build.results.result)
+        - name: pushOutput
+          value: $(tasks.push.results.output)
+        - name: pushResult
+          value: $(tasks.push.results.result)
         - name: sender
           value: WebBot<webbot@zdns.cn>
         - name: recipients
