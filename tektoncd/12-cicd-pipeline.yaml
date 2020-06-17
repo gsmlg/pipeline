@@ -307,7 +307,7 @@ spec:
           workspace: repo
     - name: push
       taskRef:
-        name: build-push
+        name: push-build
       runAfter:
         - build
       workspaces:
