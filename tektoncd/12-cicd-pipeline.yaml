@@ -208,6 +208,13 @@ spec:
       description: task run output
     - name: result
       description: task run result
+  params:
+    - name: user_name
+      description: user display name
+    - name: revision
+      description: git revision
+    - name: ref
+      description: git reference
   steps:
     - name: push
       workingDir: $(workspaces.repo.path)
@@ -217,7 +224,8 @@ spec:
         if test -x bin/hash_linux
         then
           echo "New version, auto save package" | tee $(results.output.path)
-          make upload | tee $(results.output.path)
+          make tar | tee $(results.output.path)
+          make ciupload USERNAME=$(params.user_name) COMMIT=$(params.revision) BRANCH=$(params.ref) | tee $(results.output.path)
         else
           echo "Old version, need to upload manually" | tee $(results.output.path)
         fi
@@ -313,6 +321,13 @@ spec:
       workspaces:
         - name: repo
           workspace: repo
+      params:
+        - name: user_name
+          value: $(params.user_name)
+        - name: revision
+          value: $(params.revision)
+        - name: ref
+          value: $(params.ref)
     - name: report
       taskRef:
         name: sendmail-after-push
