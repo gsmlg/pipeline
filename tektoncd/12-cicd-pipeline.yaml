@@ -47,6 +47,8 @@ spec:
       lintText = lintFile.read()
       buildFile = open('build-log.txt', 'r')
       buildText = buildFile.read()
+      pushFile = open('push.log', 'r')
+      pushText = pushFile.read()
       message = f"""\
       Subject: $(params.subject)
       To: {receiver_emails}
@@ -70,7 +72,7 @@ spec:
       ===
 
       Push Package: <$(params.pushResult)>:
-      $(params.pushOutput)
+      {pushText}
 
       ==="""
       message = message.encode('utf-8').strip()
@@ -223,12 +225,12 @@ spec:
         #!/bin/sh
         if test -x bin/hash_linux
         then
-          echo "New version, auto save package" | tee $(results.output.path)
-          make tar | tee $(results.output.path)
+          echo "New version, auto save package" | tee -a $(results.output.path) | tee -a push.log
+          make tar | tee -a $(results.output.path) | tee -a push.log
           branch=`echo $(params.ref) | sed 's;/;_;g'`
-          make ciupload USERNAME=$(params.user_name) COMMIT=$(params.revision) BRANCH=${branch} | tee $(results.output.path)
+          make ciupload USERNAME=$(params.user_name) COMMIT=$(params.revision) BRANCH=${branch} | tee -a $(results.output.path) | tee -a push.log
         else
-          echo "Old version, need to upload manually" | tee $(results.output.path)
+          echo "Old version, need to upload manually" | tee -a $(results.output.path) | tee -a push.log
         fi
         echo $? | tee $(results.result.path)
   workspaces:
