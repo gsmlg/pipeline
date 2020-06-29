@@ -6,12 +6,22 @@ metadata:
 spec:
   serviceAccountName: tekton-triggers-sa
   triggers:
-    - name: push-pipeline
+    - name: push-event
       interceptors:
         - gitlab:
             eventTypes:
               - Push Hook
       bindings:
-        - name: gitlab-event-bindings
+        - ref: gitlab-push-event-bindings
       template:
         name: zddiv3-web-push-pipeline
+    - name: pipeline-event
+      interceptors:
+        - gitlab:
+            eventTypes:
+              - Pipeline Hook
+      bindings:
+        - ref: gitlab-pipeline-event-bindings
+      template:
+        name: zddiv3-web-pipeline-pipeline
+

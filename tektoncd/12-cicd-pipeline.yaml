@@ -267,7 +267,7 @@ spec:
     - name: user_username
       type: string
       description: git username
-      default: webot
+      default: webbot
     - name: user_email
       type: string
       description: gitlab user email
