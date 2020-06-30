@@ -109,6 +109,8 @@ spec:
     - name: revision
       type: string
       description: git commit id
+    - name: ref
+      type: string
   steps:
     - name: update-gitlib-pipeline
       image: curlimages/curl
@@ -239,8 +241,6 @@ spec:
       runAfter:
         - push
       params:
-        - name: user_name
-          value: $(params.user_name)
         - name: revision
           value: $(params.revision)
         - name: ref
