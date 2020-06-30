@@ -12,7 +12,7 @@ spec:
     image: alpine
     script: |
       #!/bin/sh
-      if [ $(params.status) = "running" ]; then
+      if [ "$(params.status)" = "pending" -o "$(params.status)" = "running" ]; then
         echo "$(params.status)"
         exit 0
       else
