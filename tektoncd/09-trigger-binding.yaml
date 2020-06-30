@@ -1,7 +1,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
-  name: gitlab-event-bindings
+  name: gitlab-push-event-bindings
   namespace: cicd
 spec:
   params:
@@ -23,3 +23,27 @@ spec:
     value: $(body.user_email)
   - name: ref
     value: $(body.ref)
+
+---
+
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: gitlab-pipeline-event-bindings
+  namespace: cicd
+spec:
+  params:
+  - name: project_name
+    value: $(body.project.name)
+  - name: revision
+    value: $(body.object_attributes.sha)
+  - name: repository_url
+    value: $(body.project.git_ssh_url)
+  - name: user_name
+    value: $(body.user.name)
+  - name: user_username
+    value: $(body.user.username)
+  - name: ref
+    value: $(body.object_attributes.ref)
+  - name: status
+    value: $(body.object_attributes.status)

@@ -1,0 +1,315 @@
+
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: is-running
+spec:
+  params:
+  - name: status
+    type: string
+  check:
+    image: alpine
+    script: |
+      #!/bin/sh
+      if [ $(params.status) = "running" ]; then
+        echo "$(params.status)"
+        exit 0
+      else
+        echo "$(params.status)"
+        exit 1
+      fi
+
+---      
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: start-build-info
+  namespace: cicd
+spec:
+  params:
+    - name: revision
+      type: string
+      description: git commit id
+  steps:
+    - name: update-gitlib-pipeline
+      image: curlimages/curl
+      script: |-
+        curl -X POST \
+        -sSLf \
+        -H "PRIVATE-TOKEN: ${TOKEN}" \
+        -d state=running \
+        -d context=tekton-build \
+        -d description="Running Build" \
+        "http://git.zdns.cn/api/v4/projects/48/statuses/$(params.revision)"
+      env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-webbot
+              key: api-token
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: push-package
+  namespace: cicd
+spec:
+  results:
+    - name: output
+      description: task run output
+    - name: result
+      description: task run result
+  params:
+    - name: user_name
+      description: user display name
+    - name: revision
+      description: git revision
+    - name: ref
+      description: git reference
+  steps:
+    - name: push
+      workingDir: $(workspaces.repo.path)
+      image: gsmlg/curl-make-git:zddi-web
+      script: |
+        #!/bin/sh
+        if test -x bin/hash_linux
+        then
+          echo "Auto save package..." | tee -a $(results.output.path)
+          make tar
+          branch=`echo $(params.ref) | sed 's;/;_;g'`
+          make ciupload USERNAME=$(params.user_name) COMMIT=$(params.revision) BRANCH=${branch} | tee -a $(results.output.path)
+          if [ $? -eq "0" ]
+          then
+            echo -n "true" | tee $(results.result.path)
+          else
+            echo -n "false" | tee $(results.result.path)
+          fi
+        else
+          echo "Old version, need to upload manually" | tee -a $(results.output.path)
+          echo -n "---" | tee $(results.result.path)
+        fi
+  workspaces:
+    - name: repo
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: report-build
+  namespace: cicd
+spec:
+  params:
+    - name: result
+      type: string
+    - name: revision
+      type: string
+      description: git commit id
+  steps:
+    - name: update-gitlib-pipeline
+      image: curlimages/curl
+      script: |-
+        if [ $(result) = "true" ]
+        then
+          status=success
+        elif [ $(result) = "false" ]
+          status=failed
+        else
+          exit 0
+        fi
+        curl -X POST \
+        -sSLf \
+        -H "PRIVATE-TOKEN: ${TOKEN}" \
+        -d state=${status} \
+        -d context=tekton-build \
+        -d description="Build end" \
+        "http://git.zdns.cn/api/v4/projects/48/statuses/$(params.revision)"
+      env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-webbot
+              key: api-token
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: zddi-web-build-pipeline
+  namespace: cicd
+spec:
+  workspaces:
+    - name: repo
+  params:
+    - name: project_name
+      type: string
+      description: project name
+      default: zddiv3-web
+    - name: repository_url
+      type: string
+      default: git@git.zdns.cn:zdns/zddiv3-web.git
+    - name: revision
+      type: string
+      default: master
+    - name: ref
+      type: string
+      default: refs/origin/master
+    - name: user_name
+      type: string
+      description: gitlab user display name
+      default: "Web Bot"
+    - name: user_username
+      type: string
+      description: git username
+      default: webbot
+    - name: status
+      type: string
+      description: pipeline status
+      default: ""
+  tasks:
+    - name: prepare
+      conditions:
+        - conditionRef: is-running
+          params:
+            - name: status
+              value: $(params.status)
+      params:
+        - name: revision
+          value: $(params.revision)
+      taskRef:
+        name: start-build-info
+    - name: clone
+      taskRef: 
+        name: git-clone
+      runAfter:
+        - prepare
+      workspaces:
+        - name: output
+          workspace: repo
+      params:
+        - name: url
+          value: $(params.repository_url)
+        - name: revision
+          value: $(params.revision)
+        - name: submodules
+          value: "false"
+    - name: install
+      taskRef:
+        name: yarn-install
+      runAfter:
+        - clone
+      workspaces:
+        - name: repo
+          workspace: repo
+    - name: build
+      taskRef:
+        name: yarn-run
+      runAfter:
+        - install
+      params:
+        - name: cmd
+          value: build
+      workspaces:
+        - name: repo
+          workspace: repo
+    - name: push
+      taskRef:
+        name: push-package
+      runAfter:
+        - build
+      workspaces:
+        - name: repo
+          workspace: repo
+      params:
+        - name: user_name
+          value: $(params.user_name)
+        - name: revision
+          value: $(params.revision)
+        - name: ref
+          value: $(params.ref)
+  # finally:
+    - name: report-build
+      taskRef:
+        name: report-build
+      runAfter:
+        - push
+      params:
+        - name: user_name
+          value: $(params.user_name)
+        - name: revision
+          value: $(params.revision)
+        - name: ref
+          value: $(params.ref)
+        - name: result
+          value: $(tasks.push.results.result)
+
+
+---
+
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: zddiv3-web-pipeline-pipeline
+  namespace: cicd
+spec:
+  params:
+  - name: project_name
+    description: Project Name
+    default: zddiv3-web
+  - name: revision
+    description: The git revision
+    default: master
+  - name: repository_url
+    description: The git repository url
+    default: git@git.zdns.cn:zdns/zddiv3-web.git
+  - name: user_name
+    description: The gitlab user display name
+    default: 'Web Bot'
+  - name: user_username
+    default: 'webbot'
+  - name: ref
+    description: The git commit ref
+    default: ''
+  - name: status
+    description: "The state of the status. Can be one of the following: pending, running, success, failed, canceled"
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: web-build-pipeline-run-
+        namespace: cicd
+      spec:
+          serviceAccountName: pipeline-run-service
+          pipelineRef:
+            name: zddi-web-build-pipeline
+          workspaces:
+            - name: repo
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: nfs
+                  accessModes:
+                    - ReadWriteMany
+                  resources:
+                    requests:
+                      storage: 1Gi
+          params:
+            - name: project_name
+              value: $(params.project_name)
+            - name: repository_url
+              value: $(params.repository_url)
+            - name: revision
+              value: $(params.revision)
+            - name: ref
+              value: $(params.ref)
+            - name: user_name
+              value: $(params.user_name)
+            - name: user_username
+              value: $(params.user_username)
+            - name: status
+              value: $(params.status)
+
