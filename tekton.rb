@@ -11,9 +11,13 @@ File.open "tekton.yaml" do |f|
 
   out.each do |url|
     puts url
-    newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/pipeline.*\/cmd\//, 'docker.io/gsmlg/tekton-pipeline-').sub(/@.+$/, '')
-    newCnt.gsub!(url, newUrl)
+    if /gcr.io\/distroless\/base/ =~ url
+      newUrl = "docker.io/gsmlg/distroless-base"
+    else
+      newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/pipeline.*\/cmd\//, 'docker.io/gsmlg/tekton-pipeline-').sub(/@.+$/, '')
+    end
     puts newUrl
+    newCnt.gsub!(url, newUrl)
     puts `docker pull #{url}`
     puts `docker tag #{url} #{newUrl}`
     puts `docker push #{newUrl}`
