@@ -16,7 +16,7 @@ spec:
     default: ""
   - name: BUILDER_IMAGE
     description: The image on which builds will run
-    default: gcr.io/kaniko-project/executor:latest
+    default: docker.io/gsmlg/kaniko-executor:latest
   workspaces:
   - name: source
   results:
@@ -46,7 +46,7 @@ spec:
       runAsUser: 0
   - name: write-digest
     workingDir: $(workspaces.source.path)
-    image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/imagedigestexporter:v0.11.1
+    image: docker.io/gsmlg/tekton-cmd-imagedigestexporter:v0.11.1
     # output of imagedigestexport [{"key":"digest","value":"sha256:eed29..660","resourceRef":{"name":"myrepo/myimage"}}]
     command: ["/ko-app/imagedigestexporter"]
     args:
@@ -116,7 +116,7 @@ spec:
       description: The precise commit SHA that was fetched by this Task
   steps:
     - name: clone
-      image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.13.2
+      image: docker.io/gsmlg/tekton-cmd-git-init:v0.13.2
       script: |
         CHECKOUT_DIR="$(workspaces.output.path)/$(params.subdirectory)"
         cleandir() {
