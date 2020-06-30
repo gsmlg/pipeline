@@ -115,10 +115,11 @@ spec:
     - name: update-gitlib-pipeline
       image: curlimages/curl
       script: |-
-        if [ $(result) = "true" ]
+        if [ "$(result)" = "true" ]
         then
           status=success
-        elif [ $(result) = "false" ]
+        elif [ "$(result)" = "false" ]
+        then
           status=failed
         else
           exit 0
