@@ -173,7 +173,7 @@ spec:
     - name: status
       type: string
       description: pipeline status
-      default: ""
+      default: "N/A"
   tasks:
     - name: prepare
       conditions:
@@ -278,6 +278,7 @@ spec:
     default: ''
   - name: status
     description: "The state of the status. Can be one of the following: pending, running, success, failed, canceled"
+    default: ''
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -300,17 +301,17 @@ spec:
                       storage: 1Gi
           params:
             - name: project_name
-              value: $(params.project_name)
+              value: $(tt.params.project_name)
             - name: repository_url
-              value: $(params.repository_url)
+              value: $(tt.params.repository_url)
             - name: revision
-              value: $(params.revision)
+              value: $(tt.params.revision)
             - name: ref
-              value: $(params.ref)
+              value: $(tt.params.ref)
             - name: user_name
-              value: $(params.user_name)
+              value: $(tt.params.user_name)
             - name: user_username
-              value: $(params.user_username)
+              value: $(tt.params.user_username)
             - name: status
-              value: $(params.status)
+              value: $(tt.params.status)
 
