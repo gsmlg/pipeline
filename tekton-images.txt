@@ -30,3 +30,4 @@ docker.io/gsmlg/tekton-dashboard-dashboard:v0.8.2
 docker.io/gsmlg/tekton-triggers-controller:v0.7.0
 docker.io/gsmlg/tekton-triggers-eventlistenersink:v0.7.0
 docker.io/gsmlg/tekton-triggers-webhook:v0.7.0
+docker.io/gsmlg/tekton-dashboard-dashboard:v0.9.0
