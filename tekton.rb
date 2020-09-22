@@ -53,7 +53,6 @@ end
 
 
 File.open "tekton-trigger.yaml" do |f|
-  TRIGGER_VERSION = "v0.7.0"
   cnt = File.read f
 
   reg = /gcr.io[\/A-Za-z0-9.:@-]+/
