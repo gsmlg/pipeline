@@ -23,6 +23,23 @@ File.open "tekton.yaml" do |f|
     puts `docker push #{newUrl}`
     `echo #{newUrl} >> tekton-images.txt`
   end
+
+  regGcloud = /google\/cloud-sdk@sha256:[A-Za-z0-9]+/
+  regt = /google\/cloud-sdk:([A-Za-z0-9-\.]+)/
+  out2 = cnt.scan regGcloud
+
+  out2.each do |url|
+    p url
+    m = regt.match newCnt
+    tag = m[1]
+    newUrl = "docker.io/gsmlg/google-cloud-sdk:#{tag}"
+    p newUrl
+    newCnt.gsub!(url, newUrl)
+    puts `docker pull #{url}`
+    puts `docker tag #{url} #{newUrl}`
+    puts `docker push #{newUrl}`
+    `echo #{newUrl} >> tekton-images.txt`
+  end
   
   File.write 'updated_tekton.yaml', newCnt
 end
