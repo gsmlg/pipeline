@@ -140,6 +140,49 @@ spec:
 
 ---
 
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ding-build
+  namespace: cicd
+spec:
+  params:
+    - name: result
+      type: string
+    - name: revision
+      type: string
+      description: git commit id
+    - name: ref
+      type: string
+  steps:
+    - name: ding
+      image: gsmlg/dingding
+      script: |-
+        if [ "$(params.result)" = "true" ]
+        then
+          /ding "Built success on branch $(params.ref) at $(params.revision)"
+        elif [ "$(params.result)" = "false" ]
+        then
+          /ding "Built failed on branch $(params.ref) at $(params.revision)"
+        else
+          exit 0
+        fi
+      env:
+        - name: access_token
+          valueFrom:
+            secretKeyRef:
+              name: my-dingding
+              key: access_token
+        - name: secret
+          valueFrom:
+            secretKeyRef:
+              name: my-dingding
+              key: secret
+
+
+---
+
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -239,6 +282,18 @@ spec:
     - name: report-build
       taskRef:
         name: report-build
+      runAfter:
+        - push
+      params:
+        - name: revision
+          value: $(params.revision)
+        - name: ref
+          value: $(params.ref)
+        - name: result
+          value: $(tasks.push.results.result)
+    - name: ding
+      taskRef:
+        name: ding-build
       runAfter:
         - push
       params:
