@@ -43,6 +43,7 @@ docker.io/gsmlg/tekton-pipeline-gcs-fetcher:v0.16.3
 docker.io/gsmlg/distroless-base
 docker.io/gsmlg/distroless-base
 docker.io/gsmlg/tekton-pipeline-webhook:v0.16.3
+docker.io/gsmlg/google-cloud-sdk:302.0.0-slim
 docker.io/gsmlg/tekton-dashboard-dashboard:v0.8.2
 docker.io/gsmlg/tekton-triggers-controller:v0.8.1
 docker.io/gsmlg/tekton-triggers-eventlistenersink:v0.8.1
