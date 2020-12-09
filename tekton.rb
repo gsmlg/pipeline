@@ -9,23 +9,9 @@ File.open "tekton.yaml" do |f|
 
   newCnt = cnt
 
-  out.each do |url|
-    puts url
-    if /gcr.io\/distroless\/base/ =~ url
-      newUrl = "docker.io/gsmlg/distroless-base"
-    else
-      newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/pipeline.*\/cmd\//, 'docker.io/gsmlg/tekton-pipeline-').sub(/@.+$/, '')
-    end
-    puts newUrl
-    newCnt.gsub!(url, newUrl)
-    puts `docker pull #{url}`
-    puts `docker tag #{url} #{newUrl}`
-    puts `docker push #{newUrl}`
-    `echo #{newUrl} >> tekton-images.txt`
-  end
-
-  regGcloud = /google\/cloud-sdk@sha256:[A-Za-z0-9]+/
-  regt = /google\/cloud-sdk:([A-Za-z0-9-\.]+)/
+  # gcr.io/google.com/cloudsdktool/cloud-sdk
+  regGcloud = /gcr.io\/google.com\/.*\/cloud-sdk@sha256:[A-Fa-f0-9]+/
+  regt = /gcr.io\/google.com\/.*\/cloud-sdk:([A-Za-z0-9\-\.]+)/
   out2 = cnt.scan regGcloud
 
   out2.each do |url|
@@ -34,6 +20,21 @@ File.open "tekton.yaml" do |f|
     tag = m[1]
     newUrl = "docker.io/gsmlg/google-cloud-sdk:#{tag}"
     p newUrl
+    newCnt.gsub!(url, newUrl)
+    puts `docker pull #{url}`
+    puts `docker tag #{url} #{newUrl}`
+    puts `docker push #{newUrl}`
+    `echo #{newUrl} >> tekton-images.txt`
+  end
+  
+  out.each do |url|
+    puts url
+    if /gcr.io\/distroless\/base/ =~ url
+      newUrl = "docker.io/gsmlg/distroless-base"
+    else
+      newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/pipeline.*\/cmd\//, 'docker.io/gsmlg/tekton-pipeline-').sub(/@.+$/, '')
+    end
+    puts newUrl
     newCnt.gsub!(url, newUrl)
     puts `docker pull #{url}`
     puts `docker tag #{url} #{newUrl}`
