@@ -2,7 +2,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: gitlab-listener-interceptor
-  namespace: cicd
+  namespace: devops
 spec:
   serviceAccountName: tekton-triggers-sa
   triggers:

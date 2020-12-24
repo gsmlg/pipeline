@@ -2,7 +2,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
   name: gitlab-push-event-bindings
-  namespace: cicd
+  namespace: devops
 spec:
   params:
   - name: project_name
@@ -30,7 +30,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
   name: gitlab-pipeline-event-bindings
-  namespace: cicd
+  namespace: devops
 spec:
   params:
   - name: project_name

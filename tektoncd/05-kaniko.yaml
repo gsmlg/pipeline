@@ -13,7 +13,7 @@ spec:
     description: The build context used by Kaniko.
     default: ./
   - name: EXTRA_ARGS
-    default: ""
+    default: "--skip-tls-verify"
   - name: BUILDER_IMAGE
     description: The image on which builds will run
     default: docker.io/gsmlg/kaniko-executor:latest

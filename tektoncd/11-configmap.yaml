@@ -6,4 +6,4 @@ data:
 kind: ConfigMap
 metadata:
   name: yarnrc
-  namespace: cicd
+  namespace: devops

@@ -3,7 +3,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: sendmail-after-push
-  namespace: cicd
+  namespace: devops
 spec:
   params:
     - name: server
@@ -121,7 +121,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: yarn-install
-  namespace: cicd
+  namespace: devops
 spec:
   workspaces:
     - name: repo
@@ -161,7 +161,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: yarn-run
-  namespace: cicd
+  namespace: devops
 spec:
   params:
     - name: cmd
@@ -203,7 +203,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: push-build
-  namespace: cicd
+  namespace: devops
 spec:
   results:
     - name: output
@@ -242,7 +242,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: zddi-web-ci-pipeline
-  namespace: cicd
+  namespace: devops
 spec:
   workspaces:
     - name: repo
@@ -365,7 +365,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: zddiv3-web-push-pipeline
-  namespace: cicd
+  namespace: devops
 spec:
   params:
   - name: project_name
@@ -393,7 +393,7 @@ spec:
       kind: PipelineRun
       metadata:
         generateName: web-push-pipeline-run-
-        namespace: cicd
+        namespace: devops
       spec:
           serviceAccountName: pipeline-run-service
           pipelineRef:

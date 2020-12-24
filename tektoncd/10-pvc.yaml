@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: yarn-cache
-  namespace: cicd
+  namespace: devops
 spec:
   accessModes:
   - ReadWriteMany

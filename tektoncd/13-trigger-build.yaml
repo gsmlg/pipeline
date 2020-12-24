@@ -26,7 +26,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: start-build-info
-  namespace: cicd
+  namespace: devops
 spec:
   params:
     - name: revision
@@ -56,7 +56,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: push-package
-  namespace: cicd
+  namespace: devops
 spec:
   results:
     - name: output
@@ -101,7 +101,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: report-build
-  namespace: cicd
+  namespace: devops
 spec:
   params:
     - name: result
@@ -145,7 +145,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: ding-build
-  namespace: cicd
+  namespace: devops
 spec:
   params:
     - name: result
@@ -187,7 +187,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: zddi-web-build-pipeline
-  namespace: cicd
+  namespace: devops
 spec:
   workspaces:
     - name: repo
@@ -311,7 +311,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: zddiv3-web-pipeline-pipeline
-  namespace: cicd
+  namespace: devops
 spec:
   params:
   - name: project_name
@@ -339,7 +339,7 @@ spec:
       kind: PipelineRun
       metadata:
         generateName: web-build-pipeline-run-
-        namespace: cicd
+        namespace: devops
       spec:
           serviceAccountName: pipeline-run-service
           pipelineRef:
