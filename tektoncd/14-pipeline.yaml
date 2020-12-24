@@ -94,9 +94,9 @@ spec:
         workspace: repo
       params:
       - name: url
-        value: $(params.repo-url)
+        value: $(params.repository_url)
       - name: revision
-        value: $(params.branch-name)
+        value: $(params.revision)
     - name: get-branch
       params:
         - name: ref
@@ -115,14 +115,14 @@ spec:
       workspaces:
       - name: source
         workspace: repo
-    finally:
     - name: ding
       taskRef:
         name: ding-message
+      runAfter:
+        - "build-image"
       params:
         - name: message
-          value: |
-            Successful build image docker.zdns.cn/zcloud/web:$(tasks.get-branch.results.branch)
+          value: Successful build image docker.zdns.cn/zcloud/web:$(tasks.get-branch.results.branch)
 
 ---
 
