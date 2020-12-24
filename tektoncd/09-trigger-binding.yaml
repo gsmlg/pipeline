@@ -29,21 +29,31 @@ spec:
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
-  name: gitlab-pipeline-event-bindings
+  name: gitlab-merge-request-event-bindings
   namespace: devops
 spec:
   params:
   - name: project_name
     value: $(body.project.name)
   - name: revision
-    value: $(body.object_attributes.sha)
+    value: $(body.object_attributes.last_commit.id)
   - name: repository_url
     value: $(body.project.git_ssh_url)
   - name: user_name
     value: $(body.user.name)
   - name: user_username
     value: $(body.user.username)
-  - name: ref
-    value: $(body.object_attributes.ref)
-  - name: status
-    value: $(body.object_attributes.status)
+  - name: state
+    value: $(body.object_attributes.state)
+  - name: source_branch
+    value: $(body.object_attributes.source_branch)
+  - name: target_branch
+    value: $(body.object_attributes.target_branch)
+  - name: merge_status
+    value: $(body.object_attributes.merge_status)
+  - name: action
+    value: $(body.object_attributes.action)
+
+
+---
+

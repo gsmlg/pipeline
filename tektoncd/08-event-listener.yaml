@@ -1,7 +1,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
-  name: gitlab-listener-interceptor
+  name: gitlab-zcloud-web-listener-interceptor
   namespace: devops
 spec:
   serviceAccountName: tekton-triggers-sa
@@ -14,14 +14,14 @@ spec:
       bindings:
         - ref: gitlab-push-event-bindings
       template:
-        name: zddiv3-web-push-pipeline
-    - name: pipeline-event
+        name: zcloud-web-push
+    - name: merge-request-event
       interceptors:
         - gitlab:
             eventTypes:
               - Pipeline Hook
       bindings:
-        - ref: gitlab-pipeline-event-bindings
+        - ref: gitlab-merge-request-event-bindings
       template:
-        name: zddiv3-web-pipeline-pipeline
+        name: zcloud-web-merge-requst
 

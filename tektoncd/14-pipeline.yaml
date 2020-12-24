@@ -1,0 +1,192 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ding-message
+  namespace: devops
+spec:
+  params:
+    - name: message
+      type: string
+  steps:
+    - name: ding
+      image: gsmlg/dingding
+      script: |-
+        /ding "$(params.message)"
+      env:
+        - name: access_token
+          valueFrom:
+            secretKeyRef:
+              name: my-dingding
+              key: access_token
+        - name: secret
+          valueFrom:
+            secretKeyRef:
+              name: my-dingding
+              key: secret
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-branch-from-ref
+  namespace: devops
+spec:
+  results:
+    - name: branch
+      description: output branch name
+  params:
+    - name: ref
+      type: string
+  steps:
+    - name: run
+      image: alpine:3.12
+      script: |-
+        REF=$(params.ref)
+        BRANCH=$(echo ${REF} | sed 's;refs/origin/;;g' | sed 's;/;-;g')
+        echo ${BRANCH} | | tee -a $(results.output.branch)
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: zcloud-web-push
+  namespace: devops
+spec:
+  params:
+    - name: project_name
+      type: string
+      description: project name
+      default: zcloud/web
+    - name: repository_url
+      type: string
+      default: git@gitlab.zdns.cn:zcloud/web.git
+    - name: revision
+      type: string
+      default: master
+    - name: ref
+      type: string
+      default: refs/origin/master
+    - name: user_name
+      type: string
+      description: gitlab user display name
+      default: 'bot'
+    - name: user_username
+      type: string
+      description: git username
+      default: webbot
+    - name: user_email
+      type: string
+      description: gitlab user email
+      default: zddiweb@zdns.cn
+  workspaces:
+  - name: repo
+    description: |
+      This workspace will receive the cloned git repo and be passed
+      to the next Task for the repo's README.md file to be read.
+  tasks:
+    - name: clone-repo
+      taskRef:
+        name: git-clone
+      workspaces:
+      - name: output
+        workspace: repo
+      params:
+      - name: url
+        value: $(params.repo-url)
+      - name: revision
+        value: $(params.branch-name)
+    - name: get-branch
+      params:
+        - name: ref
+          value: $(params.ref)
+      taskRef:
+        name: get-branch-from-ref
+    - name: build-image
+      taskRef:
+        name: kaniko
+      runAfter: 
+        - "clone-repo"  # Wait until the clone is done before reading the readme.
+        - "get-branch"
+      params:
+      - name: IMAGE
+        value: docker.zdns.cn/zcloud/web:$(tasks.get-branch.results.branch)
+      workspaces:
+      - name: source
+        workspace: repo
+    finally:
+    - name: ding
+      taskRef:
+        name: ding-message
+      params:
+        - name: message
+          value: |
+            Successful build image docker.zdns.cn/zcloud/web:$(tasks.get-branch.results.branch)
+
+---
+
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: zcloud-web-push
+  namespace: devops
+spec:
+  params:
+  - name: project_name
+    description: Project Name
+    default: zcloud-web
+  - name: revision
+    description: The git revision
+    default: master
+  - name: repository_url
+    description: The git repository url
+    default: git@gitlab.zdns.cn:zcloud/web.git
+  - name: user_name
+    description: The gitlab user display name
+    default: ''
+  - name: user_username
+    default: ''
+  - name: user_email
+    description: The gitlab user email
+    default: ''
+  - name: ref
+    description: The git commit ref
+    default: ''
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: web-push-run-
+        namespace: devops
+      spec:
+        serviceAccountName: pipeline-run-service
+        pipelineRef:
+          name: zcloud-web-push
+        timeout: "2h0m0s"
+        workspaces:
+          - name: repo
+            volumeClaimTemplate:
+              spec:
+                storageClassName: nfs
+                accessModes:
+                  - ReadWriteMany
+                resources:
+                  requests:
+                    storage: 1Gi
+        params:
+          - name: project_name
+            value: $(tt.params.project_name)
+          - name: repository_url
+            value: $(tt.params.repository_url)
+          - name: revision
+            value: $(tt.params.revision)
+          - name: ref
+            value: $(tt.params.ref)
+          - name: user_name
+            value: $(tt.params.user_name)
+          - name: user_username
+            value: $(tt.params.user_username)
+          - name: user_email
+            value: $(tt.params.user_email)
+
