@@ -35,6 +35,8 @@ spec:
   results:
     - name: branch
       description: output branch name
+    - name: image
+      description: output image address
   params:
     - name: ref
       type: string
@@ -45,6 +47,7 @@ spec:
         REF=$(params.ref)
         BRANCH=$(echo ${REF} | sed 's;refs/[a-zA-Z0-9]*/;;g' | sed 's;/;-;g')
         echo ${BRANCH} | tee -a $(results.branch.path)
+        echo "docker.zdns.cn/zcloud/web:${BRANCH}" | tee -a $(results.image.path)
 
 ---
 
@@ -111,7 +114,7 @@ spec:
         - "get-branch"
       params:
       - name: IMAGE
-        value: docker.zdns.cn/zcloud/web:$(tasks.get-branch.results.branch)
+        value: "$(tasks.get-branch.results.image)"
       workspaces:
       - name: source
         workspace: repo
