@@ -43,8 +43,8 @@ spec:
       image: alpine:3.12
       script: |-
         REF=$(params.ref)
-        BRANCH=$(echo ${REF} | sed 's;refs/origin/;;g' | sed 's;/;-;g')
-        echo ${BRANCH} | tee -a $(results.output.branch)
+        BRANCH=$(echo ${REF} | sed 's;refs/[a-zA-Z0-9]*/;;g' | sed 's;/;-;g')
+        echo ${BRANCH} | tee -a $(results.branch.path)
 
 ---
 
