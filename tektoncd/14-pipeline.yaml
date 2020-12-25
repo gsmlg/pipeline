@@ -44,7 +44,7 @@ spec:
       script: |-
         REF=$(params.ref)
         BRANCH=$(echo ${REF} | sed 's;refs/origin/;;g' | sed 's;/;-;g')
-        echo ${BRANCH} | | tee -a $(results.output.branch)
+        echo ${BRANCH} | tee -a $(results.output.branch)
 
 ---
 
