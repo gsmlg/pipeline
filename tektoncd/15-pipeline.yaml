@@ -1,0 +1,209 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-nodejs
+  namespace: devops
+spec:
+  workspaces:
+    - name: repo
+  params:
+    - name: target_branch
+      type: string
+  steps:
+    - name: run
+      image: docker.zdns.cn/zcloud/node:14
+      script: |-
+        BRANCH=$(params.target_branch)
+        yarn
+        yarn run bootstrap
+        yarn run build
+        tar zcf zcloud-web-${BRANCH}.tar.gz build
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: upload-to-ftp
+  namespace: devops
+spec:
+  workspaces:
+    - name: repo
+  params:
+    - name: target_branch
+      type: string
+    # - name: ftpaddr
+    #   type: string
+  steps:
+    - name: run
+      image: gsmlg/curl
+      script: |-
+        BRANCH=$(params.target_branch)
+        curl ftp://202.173.10.127/write/ -u "liyuan:zdns@knet.cn" -T "zcloud-web-${BRANCH}.tar.gz"
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: zcloud-web-merge-request
+  namespace: devops
+spec:
+  params:
+    - name: project_name
+      description: Project Name
+      default: zcloud-web
+    - name: revision
+      description: The git revision
+      default: master
+    - name: repository_url
+      description: The git repository url
+      default: git@gitlab.zdns.cn:zcloud/web.git
+    - name: user_name
+      description: The gitlab user display name
+      default: ""
+    - name: user_username
+      default: ""
+    - name: state
+      description: merge request state closed or opening
+      default: "closed"
+    - name: source_branch
+      description: Merge from source branch
+      default: ""
+    - name: target_branch
+      description: Merge to target branch
+      default: "master"
+    - name: merge_status
+      description: Merge request status can be merged or cannot
+      default: "cannot_be_merged"
+    - name: action
+      description: Merge request action, to open / merge / close
+      default: "close"
+  workspaces:
+    - name: repo
+      description: |
+        This workspace will receive the cloned git repo and be passed
+        to the next Task for the repo's README.md file to be read.
+  tasks:
+    - name: clone-repo
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: repo
+      params:
+        - name: url
+          value: $(params.repository_url)
+        - name: revision
+          value: $(params.revision)
+    - name: build-nodejs
+      taskRef:
+        name: build-nodejs
+      runAfter:
+        - "clone-repo"
+      params:
+        - name: target_branch
+          value: $(params.target_branch)
+      workspaces:
+        - name: repo
+          workspace: repo
+    - name: upload-to-ftp
+      taskRef:
+        name: upload-to-ftp
+      runAfter:
+        - build-nodejs
+      params:
+        - name: target_branch
+          value: $(params.target_branch)
+      workspaces:
+        - name: repo
+          workspace: repo
+    - name: ding
+      taskRef:
+        name: ding-message
+      runAfter:
+        - upload-to-ftp
+      params:
+        - name: message
+          value: |
+            Successful upload build package zcloud-web-$(params.target_branch).tar.gz to ftp server.
+            Waiting for deploy...
+            This merge request is build from branch $(params.source_branch)
+
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: zcloud-web-merge-request
+  namespace: devops
+spec:
+  params:
+    - name: project_name
+      description: Project Name
+      default: zcloud-web
+    - name: revision
+      description: The git revision
+      default: master
+    - name: repository_url
+      description: The git repository url
+      default: git@gitlab.zdns.cn:zcloud/web.git
+    - name: user_name
+      description: The gitlab user display name
+      default: ""
+    - name: user_username
+      default: ""
+    - name: state
+      description: merge request state closed or opening
+      default: "closed"
+    - name: source_branch
+      description: Merge from source branch
+      default: ""
+    - name: target_branch
+      description: Merge to target branch
+      default: "master"
+    - name: merge_status
+      description: Merge request status can be merged or cannot
+      default: "cannot_be_merged"
+    - name: action
+      description: Merge request action, to open / merge / close
+      default: "close"
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: web-merge-request-run-
+        namespace: devops
+      spec:
+        serviceAccountName: pipeline-run-service
+        pipelineRef:
+          name: zcloud-web-merge-request
+        timeout: "2h0m0s"
+        workspaces:
+          - name: repo
+            volumeClaimTemplate:
+              spec:
+                storageClassName: nfs
+                accessModes:
+                  - ReadWriteMany
+                resources:
+                  requests:
+                    storage: 1Gi
+        params:
+          - name: project_name
+            value: $(tt.params.project_name)
+          - name: repository_url
+            value: $(tt.params.repository_url)
+          - name: revision
+            value: $(tt.params.revision)
+          - name: user_name
+            value: $(tt.params.user_name)
+          - name: user_username
+            value: $(tt.params.user_username)
+          - name: state
+            value: $(tt.params.state)
+          - name: source_branch
+            value: $(tt.params.source_branch)
+          - name: target_branch
+            value: $(tt.params.target_branch)
+          - name: merge_status
+            value: $(tt.params.merge_status)
+          - name: action
+            value: $(tt.params.action)

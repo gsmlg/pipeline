@@ -23,5 +23,4 @@ spec:
       bindings:
         - ref: gitlab-merge-request-event-bindings
       template:
-        name: zcloud-web-merge-requst
-
+        name: zcloud-web-merge-request
