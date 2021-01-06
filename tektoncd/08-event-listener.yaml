@@ -19,7 +19,7 @@ spec:
       interceptors:
         - gitlab:
             eventTypes:
-              - Pipeline Hook
+              - Merge Request Hook
       bindings:
         - ref: gitlab-merge-request-event-bindings
       template:
