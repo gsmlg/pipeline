@@ -13,6 +13,7 @@ spec:
   steps:
     - name: run
       image: docker.zdns.cn/zcloud/node:14
+      workingDir: $(workspaces.repo.path)
       script: |-
         BRANCH=$(params.target_branch)
         yarn
@@ -36,6 +37,7 @@ spec:
   steps:
     - name: run
       image: gsmlg/curl
+      workingDir: $(workspaces.repo.path)
       script: |-
         BRANCH=$(params.target_branch)
         curl ftp://202.173.10.127/write/ -u "liyuan:zdns@knet.cn" -T "zcloud-web-${BRANCH}.tar.gz"
