@@ -60,8 +60,8 @@ spec:
       script: |-
         REF=$(params.ref)
         BRANCH=$(echo ${REF} | sed 's;refs/[a-zA-Z0-9]*/;;g' | sed 's;/;-;g')
-        echo ${BRANCH} | tee -a $(results.branch.path)
-        echo "docker.zdns.cn/zcloud/web:${BRANCH}" | tee -a $(results.image.path)
+        echo -n ${BRANCH} | tee -a $(results.branch.path)
+        echo -n "docker.zdns.cn/zcloud/web:${BRANCH}" | tee -a $(results.image.path)
 
 ---
 
