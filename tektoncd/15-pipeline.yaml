@@ -12,7 +12,7 @@ spec:
       type: string
   steps:
     - name: run
-      image: docker.zdns.cn/zcloud/node:14
+      image: registry.devops.gsmlg.com/node:lts
       workingDir: $(workspaces.repo.path)
       script: |-
         BRANCH=$(params.target_branch)

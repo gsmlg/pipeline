@@ -61,7 +61,7 @@ spec:
         REF=$(params.ref)
         BRANCH=$(echo ${REF} | sed 's;refs/[a-zA-Z0-9]*/;;g' | sed 's;/;-;g')
         echo -n ${BRANCH} | tee -a $(results.branch.path)
-        echo -n "docker.zdns.cn/zcloud/web:${BRANCH}" | tee -a $(results.image.path)
+        echo -n "registry.devops.gsmlg.com/zcloud/web:${BRANCH}" | tee -a $(results.image.path)
 
 ---
 
@@ -139,7 +139,7 @@ spec:
         - "build-image"
       params:
         - name: message
-          value: Successful build image docker.zdns.cn/zcloud/web:$(tasks.get-branch.results.branch)
+          value: Successful build image registry.devops.gsmlg.com/zcloud/web:$(tasks.get-branch.results.branch)
     - name: kubectl
       taskRef:
         name: delete-pods
