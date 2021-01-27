@@ -36,7 +36,7 @@ spec:
   - name: project_name
     value: $(body.project.name)
   - name: revision
-    value: $(body.object_attributes.last_commit.id)
+    value: $(body.object_attributes.merge_commit_sha)
   - name: repository_url
     value: $(body.project.git_ssh_url)
   - name: user_name

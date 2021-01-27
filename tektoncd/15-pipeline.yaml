@@ -44,6 +44,20 @@ spec:
         curl ftp://202.173.10.127/write/ -u "liyuan:zdns@knet.cn" -T "zcloud-web-${BRANCH}.tar.gz" -T "zcloud-web-${BRANCH}.tar.gz.sha256sum"
 
 ---
+
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: is-merge-action
+  namespace: devops
+spec:
+  params:
+    - name: action
+  check:
+    image: alpine
+    script: 'test "$(params.action)" "==" "merge"'
+
+---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -78,7 +92,7 @@ spec:
       description: Merge request status can be merged or cannot
       default: "cannot_be_merged"
     - name: action
-      description: Merge request action, to open / merge / close
+      description: Merge request action, to open / merge / close / update
       default: "close"
   workspaces:
     - name: repo
@@ -87,6 +101,11 @@ spec:
         to the next Task for the repo's README.md file to be read.
   tasks:
     - name: clone-repo
+      conditions:
+        - conditionRef: is-merge-action
+          params:
+            - name: action
+              value: $(params.action)
       taskRef:
         name: git-clone
       workspaces:
