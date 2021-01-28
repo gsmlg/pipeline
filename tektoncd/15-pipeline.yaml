@@ -41,7 +41,8 @@ spec:
       workingDir: $(workspaces.repo.path)
       script: |-
         BRANCH=$(params.target_branch)
-        curl ftp://202.173.10.127/write/ -u "liyuan:zdns@knet.cn" -T "zcloud-web-${BRANCH}.tar.gz" -T "zcloud-web-${BRANCH}.tar.gz.sha256sum"
+        curl ftp://202.173.10.127/write/ -u "liyuan:zdns@knet.cn" -T "zcloud-web-${BRANCH}.tar.gz" 
+        curl ftp://202.173.10.127/write/ -u "liyuan:zdns@knet.cn" -T "zcloud-web-${BRANCH}.tar.gz.sha256sum"
 
 ---
 
