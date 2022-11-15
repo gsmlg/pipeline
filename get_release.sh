@@ -4,11 +4,11 @@ export DOCKER=${DOCKER:-docker}
 
 FILE=$(curl -sSL https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml)
 
-IMAGES=$(echo "${FILE}" | grep gcr.io |awk '{print $2}')
+IMAGES=$(echo "${FILE}" | grep gcr.io |awk '{print $2}'| sed 's;[",];;g')
 
 VAR="v0.0.1"
 
-echo $IMAGES
+echo "$IMAGES"
 exit
 
 for img in $IMAGES
