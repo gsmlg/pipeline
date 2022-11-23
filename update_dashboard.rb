@@ -1,5 +1,4 @@
- File.open "tekton-dashboard.yaml" do |f|
-   DASHBOARD_VERSION = "v0.9.0"
+File.open "tekton-dashboard.yaml" do |f|
    cnt = File.read f
 
    reg = /gcr.io[\/A-Za-z0-9.:@-]+/
@@ -10,7 +9,7 @@
    # gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
    out.each do |url|
      puts url
-     newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/dashboard.*\/cmd\//, 'docker.io/gsmlg/tekton-dashboard-').sub(/@.+$/, ":#{DASHBOARD_VERSION}")
+     newUrl = url.sub(/gcr.io\/tekton-releases\/github.com\/tektoncd\/dashboard.*\/cmd\//, 'docker.io/gsmlg/tekton-dashboard-').sub(/@.+$/, "")
      newCnt.gsub!(url, newUrl)
      puts newUrl
      puts `docker pull #{url}`

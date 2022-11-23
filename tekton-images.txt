@@ -84,7 +84,7 @@ gcr.io/google.com/cloudsdktool/cloud-sdk:302.0.0-slim
 gcr.io/google.com/cloudsdktool/cloud-sdk
 docker.io/gsmlg/tekton-pipeline-resolvers:v0.41.0
 docker.io/gsmlg/tekton-pipeline-webhook:v0.41.0
-docker.io/gsmlg/tekton-dashboard-dashboard:v0.30.0:v0.30.0
+docker.io/gsmlg/tekton-dashboard-dashboard:v0.30.0
 docker.io/gsmlg/tekton-triggers-controller:v0.21.0
 docker.io/gsmlg/tekton-triggers-eventlistenersink:v0.21.0
 docker.io/gsmlg/tekton-triggers-webhook:v0.21.0
